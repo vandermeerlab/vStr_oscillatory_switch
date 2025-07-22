@@ -9,7 +9,8 @@ c2 = [26/255 255/255 26/255]; % Green
 c3 = [0.7 0.7 0.7]; % Gray
 c4 = [0.8500 0.3250 0.0980]; % Orange
 min_freq = 2; % Minimum frequency in Hertz
-p_thresh = 99; % Percentile threshold to establish significance of phase locking
+pl_thresh = 99; % Percentile threshold to establish significance of phase locking
+diff_thresh = 95; % Percentile threshold to establish significance of PPC difference
 headers = {'label','lfr_min','lfr_max', 'lfr_mean', 'hfr_min', 'hfr_max', ...
     'hfr_mean', 'lfr_sts_peak', 'lfr_sts_diff', 'hfr_sts_peak', 'hfr_sts_diff', ...
     'lfr_ppc_peak', 'lfr_ppc_diff', 'hfr_ppc_peak', 'hfr_ppc_diff'};
@@ -86,7 +87,7 @@ for idx = 1:length(rats)
                     od.fsi_res.near_spec{iC}.subsampled_sts, 'Color', c3);
 
                 % Plot the STS thresholds
-                pct_sts = prctile(od.fsi_res.near_spec{iC}.shuf_sts, p_thresh);
+                pct_sts = prctile(od.fsi_res.near_spec{iC}.shuf_sts, pl_thresh);
                 plot(ax2, od.fsi_res.near_spec{iC}.freqs, pct_sts, '--black');
                 lfr_sts_mask = od.fsi_res.near_lfr_spec{iC}.subsampled_sts>pct_sts;
                 hfr_sts_mask = od.fsi_res.near_hfr_spec{iC}.subsampled_sts>pct_sts;
@@ -116,11 +117,11 @@ for idx = 1:length(rats)
                 ax2.XAxis.FontSize = 18;
                 ax2.XAxis.FontWeight = 'normal';
                 ax2.TickDir = 'out';
-                leg2 = legend({'LFR','HFR','All Trials', sprintf('%2d thresh', p_thresh)}, 'Location','best');
+                leg2 = legend({'LFR','HFR','All Trials', sprintf('%2d thresh', pl_thresh)}, 'Location','best');
 
                 % Plot STS diff
                 control_sts_diff = abs(od.fsi_res.near_p1_spec{iC}.subsampled_sts - od.fsi_res.near_p2_spec{iC}.subsampled_sts);
-                pct_sts_diff = prctile(control_sts_diff, p_thresh);
+                pct_sts_diff = prctile(control_sts_diff, diff_thresh);
                 sts_diff = od.fsi_res.near_hfr_spec{iC}.subsampled_sts - od.fsi_res.near_lfr_spec{iC}.subsampled_sts;
                 ax2 = subplot(2,3,5);
                 plot(ax2, this_freqs, sts_diff(x1:end), 'Color', 'black');
@@ -198,8 +199,11 @@ for idx = 1:length(rats)
                 p11 = plot(ax3, od.fsi_res.near_spec{iC}.freqs, ...
                     od.fsi_res.near_spec{iC}.subsampled_ppc, 'Color', c3);
 
-                % Plot the PPC thresholds
-                pct_ppc = prctile(od.fsi_res.near_spec{iC}.shuf_ppc, p_thresh);
+                % Plot the PPC thresholds      
+                pct_ppc = prctile(od.fsi_res.near_spec{iC}.shuf_ppc, pl_thresh);
+                if any(isnan(pct_ppc))
+                    dummy = 1;
+                end
                 plot(ax3, od.fsi_res.near_spec{iC}.freqs, pct_ppc, '--black');
                 lfr_ppc_mask = od.fsi_res.near_lfr_spec{iC}.subsampled_ppc>pct_ppc;
                 hfr_ppc_mask = od.fsi_res.near_hfr_spec{iC}.subsampled_ppc>pct_ppc;
@@ -230,13 +234,16 @@ for idx = 1:length(rats)
                 ax3.YAxis.FontSize = 18;
                 ax3.YAxis.FontWeight = 'normal';
                 ax3.TickDir = 'out';
-                leg3 = legend({sprintf('%.2f Hz', this_lfr_mean), sprintf('%.2f Hz', this_hfr_mean), ...
-                    'All Trials', sprintf('%2d thresh', p_thresh)}, 'Location','best');
+                leg3 = legend({sprintf('%.2f spks/s', this_lfr_mean), sprintf('%.2f spks/s', this_hfr_mean), ...
+                    'All Trials', sprintf('%2d thresh', pl_thresh)}, 'Location','best');
                 
                 % Plot PPC diff
                 control_ppc_diff = abs(od.fsi_res.near_p1_spec{iC}.subsampled_ppc - od.fsi_res.near_p2_spec{iC}.subsampled_ppc);
-                pct_ppc_diff = prctile(control_ppc_diff, p_thresh);
+                pct_ppc_diff = prctile(control_ppc_diff, diff_thresh);
                 ppc_diff = od.fsi_res.near_hfr_spec{iC}.subsampled_ppc - od.fsi_res.near_lfr_spec{iC}.subsampled_ppc;
+                if any(isnan(pct_ppc_diff))
+                    dummy = 1;
+                end
                 ax3 = subplot(2,3,6);
                 plot(ax3, this_freqs, ppc_diff(x1:end), 'Color', 'black');
                 hold on
@@ -384,7 +391,7 @@ for idx = 1:length(rats)
                     od.msn_res.near_spec{iC}.sts_vals, 'Color', c3);
 
                 % Plot the STS thresholds
-                pct_sts = prctile(od.msn_res.near_spec{iC}.shuf_sts, p_thresh);
+                pct_sts = prctile(od.msn_res.near_spec{iC}.shuf_sts, pl_thresh);
                 plot(ax2, od.msn_res.near_spec{iC}.freqs, pct_sts, '--black');
                 lfr_sts_mask = od.msn_res.near_lfr_spec{iC}.sts_vals>pct_sts;
                 hfr_sts_mask = od.msn_res.near_hfr_spec{iC}.sts_vals>pct_sts;
@@ -414,11 +421,11 @@ for idx = 1:length(rats)
                 ax2.XAxis.FontSize = 18;
                 ax2.XAxis.FontWeight = 'normal';
                 ax2.TickDir = 'out';
-                leg2 = legend({'LFR','HFR','All Trials', sprintf('%2d thresh', p_thresh)}, 'Location','best');
+                leg2 = legend({'LFR','HFR','All Trials', sprintf('%2d thresh', pl_thresh)}, 'Location','best');
 
                 % Plot STS diff
                 control_sts_diff = abs(od.msn_res.near_p1_spec{iC}.sts - od.msn_res.near_p2_spec{iC}.sts);
-                pct_sts_diff = prctile(control_sts_diff, p_thresh);
+                pct_sts_diff = prctile(control_sts_diff, diff_thresh);
                 sts_diff = od.msn_res.near_hfr_spec{iC}.sts_vals - od.msn_res.near_lfr_spec{iC}.sts_vals;
                 ax2 = subplot(2,3,5);
                 plot(ax2, this_freqs, sts_diff(x1:end), 'Color', 'black');
@@ -497,7 +504,10 @@ for idx = 1:length(rats)
                     od.msn_res.near_spec{iC}.ppc', 'Color', c3);
 
                 % Plot the PPC thresholds
-                pct_ppc = prctile(od.msn_res.near_spec{iC}.shuf_ppc, p_thresh);
+                pct_ppc = prctile(od.msn_res.near_spec{iC}.shuf_ppc, pl_thresh);
+                if any(isnan(pct_ppc))
+                    dummy = 1;
+                end
                 plot(ax3, od.msn_res.near_spec{iC}.freqs, pct_ppc, '--black');
                 lfr_ppc_mask = od.msn_res.near_lfr_spec{iC}.ppc'>pct_ppc;
                 hfr_ppc_mask = od.msn_res.near_hfr_spec{iC}.ppc'>pct_ppc;
@@ -528,12 +538,12 @@ for idx = 1:length(rats)
                 ax3.YAxis.FontSize = 18;
                 ax3.YAxis.FontWeight = 'normal';
                 ax3.TickDir = 'out';
-                leg3 = legend({sprintf('%.2f Hz', this_lfr_mean), sprintf('%.2f Hz', this_hfr_mean), ...
-                    'All Trials', sprintf('%2d thresh', p_thresh)}, 'Location','best');
+                leg3 = legend({sprintf('%.2f spks/s', this_lfr_mean), sprintf('%.2f spks/s', this_hfr_mean), ...
+                    'All Trials', sprintf('%2d thresh', pl_thresh)}, 'Location','best');
 
                 % Plot PPC diff
                 control_ppc_diff = abs(od.msn_res.near_p1_spec{iC}.ppc - od.msn_res.near_p2_spec{iC}.ppc);
-                pct_ppc_diff = prctile(control_ppc_diff, p_thresh);
+                pct_ppc_diff = prctile(control_ppc_diff, diff_thresh);
                 ppc_diff = od.msn_res.near_hfr_spec{iC}.ppc' - od.msn_res.near_lfr_spec{iC}.ppc';
                 ax3 = subplot(2,3,6);
                 plot(ax3, this_freqs, ppc_diff(x1:end), 'Color', 'black');
@@ -621,8 +631,8 @@ for idx = 1:length(rats)
 end
 fprintf("Total number of clean MSNs are %d.\n", clean_msn);
 fprintf("Total number of clean FSIs are %d.\n", clean_fsi);
-writetable(msn_summary, 'msn_summary.xls');
-writetable(fsi_summary, 'fsi_summary.xls');
+writetable(msn_summary, strcat(odir,'msn_summary.csv'));
+writetable(fsi_summary, strcat(odir,'fsi_summary.csv'));
 %% Plot various stuff
 % Uncomment below if the above hasn't run
 % load('D:\RandomVstrAnalysis\final_results\all_summary.mat')
@@ -763,22 +773,22 @@ ax1.XLabel.String = '\Delta F.R';
 ax1.YLabel.String = '\Delta Freq Sig';
 ax1.FontSize = 16;
 ax1.YLim = [-100 100];
-
-mbdx = find(bdif_msn);
-for i = 1:length(mbdx)
-    plot([(msn_summary.hfr_mean(mbdx(i)) - msn_summary.lfr_mean(mbdx(i))), ...
-        (msn_summary.hfr_mean(mbdx(i)) - msn_summary.lfr_mean(mbdx(i)))], ...
-        [(msn_summary.hfr_ppc_diff(mbdx(i)) - msn_summary.lfr_ppc_diff(mbdx(i))), ...
-        (msn_summary.hfr_ppc_peak(mbdx(i)) - msn_summary.lfr_ppc_diff(mbdx(i)))], 'Color', 'black')
-end
-
-fbdx = find(bdif_fsi);
-for i = 1:length(fbdx)
-    plot([(fsi_summary.hfr_mean(fbdx(i)) - fsi_summary.lfr_mean(fbdx(i))), ...
-        (fsi_summary.hfr_mean(fbdx(i)) - fsi_summary.lfr_mean(fbdx(i)))], ...
-        [(fsi_summary.hfr_ppc_diff(fbdx(i)) - fsi_summary.lfr_ppc_diff(fbdx(i))), ...
-        (fsi_summary.hfr_ppc_peak(fbdx(i)) - fsi_summary.lfr_ppc_diff(fbdx(i)))], 'Color', 'black')
-end
+% 
+% mbdx = find(bdif_msn);
+% for i = 1:length(mbdx)
+%     plot([(msn_summary.hfr_mean(mbdx(i)) - msn_summary.lfr_mean(mbdx(i))), ...
+%         (msn_summary.hfr_mean(mbdx(i)) - msn_summary.lfr_mean(mbdx(i)))], ...
+%         [(msn_summary.hfr_ppc_diff(mbdx(i)) - msn_summary.lfr_ppc_diff(mbdx(i))), ...
+%         (msn_summary.hfr_ppc_peak(mbdx(i)) - msn_summary.lfr_ppc_peak(mbdx(i)))], 'Color', 'black')
+% end
+% 
+% fbdx = find(bdif_fsi);
+% for i = 1:length(fbdx)
+%     plot([(fsi_summary.hfr_mean(fbdx(i)) - fsi_summary.lfr_mean(fbdx(i))), ...
+%         (fsi_summary.hfr_mean(fbdx(i)) - fsi_summary.lfr_mean(fbdx(i)))], ...
+%         [(fsi_summary.hfr_ppc_diff(fbdx(i)) - fsi_summary.lfr_ppc_diff(fbdx(i))), ...
+%         (fsi_summary.hfr_ppc_peak(fbdx(i)) - fsi_summary.lfr_ppc_peak(fbdx(i)))], 'Color', 'black')
+% end
 
 legend({sprintf('MSNs: %d', sum(bdif_msn)), sprintf('FSIs: %d', sum(bdif_fsi))}, ...
     'FontSize', 14, 'Location', 'best');

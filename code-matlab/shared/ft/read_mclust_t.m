@@ -1,4 +1,4 @@
-function S = LoadSpikes(tfilelist)
+function S = LoadSpikes(tfilelist, encoding)
 
 % adapted from M-clust function LoadSpikes
 
