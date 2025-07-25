@@ -28,6 +28,5 @@
 *.mtc0
 *.asv
 *.DS_Store*
-code-matlab/shared/io/getDataPath.m
 *.xml
 *.tap
