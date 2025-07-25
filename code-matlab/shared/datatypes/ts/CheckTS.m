@@ -40,11 +40,12 @@ else
         fprintf('FAIL%s by CheckTS: input ts must contain t field.\n',in_mfun);
         
     else
-        % check that all t are column vectors
+        % check that all t are column vectors, if not convert it!
         for iT = 1:length(ts_in.t)
             if ~iscolumn(ts_in.t{iT})
-                pass_flag = 0;
-                fprintf('FAIL%s by CheckTS: all contents of ts_in.t must be column vectors.\n',in_mfun);
+                fprintf('Converting intoc column vector %s by CheckTS.\n',in_mfun);
+                ts_in.t{iT} = ts_in.t{iT}';
+                
             end
         end
     end

@@ -181,7 +181,6 @@ function od = generateSTS(cfg_in)
         cfg_ft.timwin = [-0.5 0.5];
         cfg_ft.spikechannel = sd.S.ft_spikes(iC).label{1};
         cfg_ft.channel = ft_csc.label(1);
-        cfg_ft.rejectsaturation = 'no';
         this_data = ft_appendspike([], ft_csc, sd.S.ft_spikes(iC));
         % Restrict data to only on-track data
         on_track_data = ft_redefinetrial(cfg_onTrack, this_data);
@@ -731,7 +730,6 @@ function od = generateSTS(cfg_in)
         cfg_ft.timwin = [-0.5 0.5];
         cfg_ft.spikechannel = sd.S.ft_spikes(iC).label{1};
         cfg_ft.channel = ft_csc.label(1);
-        cfg_ft.rejectsaturation = 'no';
         this_data = ft_appendspike([], ft_csc, sd.S.ft_spikes(iC));
         % Restrict data to only on-track data
         on_track_data = ft_redefinetrial(cfg_onTrack, this_data);

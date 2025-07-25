@@ -48,6 +48,14 @@ if ~CheckTS(ts_in)
     error('ts_in is either not a ts datatype or is poorly formed.')
 end
 
+% manishm edit for less headache
+% check that all t are column vectors, if not convert it!
+    for iT = 1:length(ts_in.t)
+        if ~iscolumn(ts_in.t{iT})
+            fprintf('Converting into column vector.\n');
+            ts_in.t{iT} = ts_in.t{iT}';
+        end
+    end
 % Parse cfg parameters
 cfg_def.operation = '>=';
 cfg_def.threshold = 0;
@@ -161,4 +169,3 @@ else
 end
 
 end
-
