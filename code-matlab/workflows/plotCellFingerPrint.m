@@ -795,66 +795,90 @@ legend({sprintf('MSNs: %d', sum(bdif_msn)), sprintf('FSIs: %d', sum(bdif_fsi))},
 
 %% Scatter of correspondence between peak frequency and peak 
 fig = figure('WindowState', 'maximized');
+
 ax1 = subplot(2,2,1);
 hold off
-s1 = scatter(ax1, msn_summary.hfr_ppc_peak(dif_hfr_msn), msn_summary.hfr_ppc_diff(dif_hfr_msn));
+keep = dif_hfr_msn;
+% keep = keep_hfr_msn_only;
+s1 = scatter(ax1, msn_summary.hfr_ppc_peak(keep), msn_summary.hfr_ppc_diff(keep));
 s1.Marker = 'o';
 s1.MarkerFaceColor = c4;
 s1.MarkerFaceAlpha = 0.5;
 s1.MarkerEdgeAlpha = 0;
 s1.SizeData = 100;
-
 ax1.XLabel.String = 'HFR PPC Peak';
 ax1.YLabel.String = 'HFR PPC Dif';
 ax1.Title.String = 'MSN HFR';
 ax1.XLim = [0 100];
 ax1.YLim = [0 100];
 ax1.FontSize = 16;
+[r,p] = corr(msn_summary.hfr_ppc_peak(keep), msn_summary.hfr_ppc_diff(keep));
+legend({sprintf('R = %.3f, p = %.3f', r, p)}, 'Location', 'best')
 
 ax1 = subplot(2,2,2);
 hold off
-s1 = scatter(ax1, msn_summary.lfr_ppc_peak(dif_lfr_msn), msn_summary.lfr_ppc_diff(dif_lfr_msn));
+keep = dif_lfr_msn;
+% keep = keep_lfr_msn_only;
+s1 = scatter(ax1, msn_summary.lfr_ppc_peak(keep), msn_summary.lfr_ppc_diff(keep));
 s1.Marker = 'o';
 s1.MarkerFaceColor = c4;
 s1.MarkerFaceAlpha = 0.5;
 s1.MarkerEdgeAlpha = 0;
 s1.SizeData = 100;
-
 ax1.XLabel.String = 'LFR PPC Peak';
 ax1.YLabel.String = 'LFR PPC Dif';
 ax1.Title.String = 'MSN LFR';
 ax1.XLim = [0 100];
 ax1.YLim = [0 100];
 ax1.FontSize = 16;
+[r,p] = corr(msn_summary.lfr_ppc_peak(keep), msn_summary.lfr_ppc_diff(keep));
+legend({sprintf('R = %.3f, p = %.3f', r, p)}, 'Location', 'best')
 
 ax1 = subplot(2,2,3);
 hold off
-s1 = scatter(ax1, fsi_summary.hfr_ppc_peak(dif_hfr_fsi), fsi_summary.hfr_ppc_diff(dif_hfr_fsi));
+keep = dif_hfr_fsi;
+% keep = keep_hfr_fsi_only;
+s1 = scatter(ax1, fsi_summary.hfr_ppc_peak(keep), fsi_summary.hfr_ppc_diff(keep));
 s1.Marker = 'o';
 s1.MarkerFaceColor = 'blue';
 s1.MarkerFaceAlpha = 0.5;
 s1.MarkerEdgeAlpha = 0;
 s1.SizeData = 100;
-
 ax1.XLabel.String = 'HFR PPC Peak';
 ax1.YLabel.String = 'HFR PPC Dif';
 ax1.Title.String = 'FSI HFR';
 ax1.XLim = [0 100];
 ax1.YLim = [0 100];
 ax1.FontSize = 16;
+[r,p] = corr(fsi_summary.hfr_ppc_peak(keep), fsi_summary.hfr_ppc_diff(keep));
+legend({sprintf('R = %.3f, p = %.3f', r, p)}, 'Location', 'best')
 
 ax1 = subplot(2,2,4);
 hold off
-s1 = scatter(ax1, fsi_summary.lfr_ppc_peak(dif_lfr_fsi), fsi_summary.lfr_ppc_diff(dif_lfr_fsi));
+keep = dif_lfr_fsi;
+% keep = keep_lfr_fsi_only;
+s1 = scatter(ax1, fsi_summary.lfr_ppc_peak(keep), fsi_summary.lfr_ppc_diff(keep));
 s1.Marker = 'o';
 s1.MarkerFaceColor = 'blue';
 s1.MarkerFaceAlpha = 0.5;
 s1.MarkerEdgeAlpha = 0;
 s1.SizeData = 100;
-
 ax1.XLabel.String = 'LFR PPC Peak';
 ax1.YLabel.String = 'LFR PPC Dif';
 ax1.Title.String = 'FSI LFR';
 ax1.XLim = [0 100];
 ax1.YLim = [0 100];
 ax1.FontSize = 16;
+
+[r,p] = corr(fsi_summary.lfr_ppc_peak(keep), fsi_summary.lfr_ppc_diff(keep));
+legend({sprintf('R = %.3f, p = %.3f', r, p)}, 'Location', 'best')
+%% Making various masks to subset cells of various kinds
+keep_pos_freq_diff_msn = (msn_summary.hfr_ppc_diff >= msn_summary.lfr_ppc_diff) & (bdif_msn);
+keep_neg_freq_diff_msn = (msn_summary.hfr_ppc_diff < msn_summary.lfr_ppc_diff) & (bdif_msn);
+keep_pos_freq_diff_fsi = (fsi_summary.hfr_ppc_diff >= fsi_summary.lfr_ppc_diff) & (bdif_fsi);
+keep_neg_freq_diff_fsi = (fsi_summary.hfr_ppc_diff < fsi_summary.lfr_ppc_diff) & (bdif_fsi);
+%%
+keep_hfr_msn_only = dif_hfr_msn & ~dif_lfr_msn;
+keep_lfr_msn_only = ~dif_hfr_msn & dif_lfr_msn;
+keep_hfr_fsi_only = dif_hfr_fsi & ~dif_lfr_fsi;
+keep_lfr_fsi_only = ~dif_hfr_fsi & dif_lfr_fsi;

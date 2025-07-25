@@ -1,6 +1,6 @@
 %% Script to plot trialwise PPC summary 
 
-cd('D:\RandomVstrAnalysis\trialwise_ppc\'); % Change this to your local machine location for results
+cd('D:\RandomVstrAnalysis\trialwise_ppc\minTrialSpikes50'); % Change this to your local machine location for results
 rats = {'R117','R119','R131','R132'};
 fsi_old_sd = [];
 fsi_sd = [];
@@ -32,7 +32,7 @@ for idx = 1:length(rats)
                 for iS = 1:length(sig3_fsi)
                     sig_idx = 0;
                     this_label = sig3_fsi{iS,1};
-                    this_label = this_label{1};
+%                     this_label = this_label{1};
                     if strcmp(this_label, fsi_labels{iC})
                         sig_idx = iS;
                         break
@@ -73,7 +73,7 @@ for idx = 1:length(rats)
                 for iS = 1:length(sig3_msn)
                     sig_idx = 0;
                     this_label = sig3_msn{iS,1};
-                    this_label = this_label{1};
+%                     this_label = this_label{1};
                     if strcmp(this_label, msn_labels{iC})
                         sig_idx = iS;
                         break
@@ -102,9 +102,9 @@ end
 %% Plot histograms
 fig = figure('WindowState', 'maximized');
 ax1 = subplot(2,1,1);
-h1 = histogram(fsi_old_sd, 0:0.005:1, 'Normalization', 'probability', 'FaceColor', 'green', 'FaceAlpha', 1);
+h1 = histogram(fsi_old_sd, 0:0.01:1, 'Normalization', 'probability', 'FaceColor', 'green', 'FaceAlpha', 1);
 hold on;
-h2 = histogram(msn_sd,0:0.005:1, 'Normalization', 'probability', 'FaceColor', 'red', 'FaceAlpha', 0.6);
+h2 = histogram(msn_sd,0:0.01:1, 'Normalization', 'probability', 'FaceColor', 'red', 'FaceAlpha', 0.6);
 ax1.XAxis.FontSize = 20;
 ax1.YAxis.FontSize = 20;
 ax1.TickDir = 'out';
@@ -123,9 +123,9 @@ ax1.Box = 'off';
 
 
 ax2 = subplot(2,1,2);
-h1 = histogram(fsi_sd, 0:0.005:1, 'Normalization', 'probability', 'FaceColor', 'green', 'FaceAlpha', 1);
+h1 = histogram(fsi_sd, 0:0.01:1, 'Normalization', 'probability', 'FaceColor', 'green', 'FaceAlpha', 1);
 hold on;
-h2 = histogram(msn_sd,0:0.005:1, 'Normalization', 'probability', 'FaceColor', 'red', 'FaceAlpha', 0.6);
+h2 = histogram(msn_sd,0:0.01:1, 'Normalization', 'probability', 'FaceColor', 'red', 'FaceAlpha', 0.6);
 ax2.XAxis.FontSize = 20;
 ax2.YAxis.FontSize = 20;
 ax2.TickDir = 'out';

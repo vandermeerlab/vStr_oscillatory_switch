@@ -9,13 +9,11 @@ rng(4994);
 
 clear;
 cd('E:\ADRLabData');
-% cd('/Users/manishm/Work/vanDerMeerLab/ADRLabData');
 please = [];
-please.rats = {'R132'};%{'R117','R119','R131','R132'}; % vStr-only rats
+please.rats = {'R117','R119','R131','R132'}; % vStr-only rats
 [cfg_in.fd,cfg_in.fd_extra] = getDataPath(please);
 cfg_in.write_output = 1;
-cfg_in.output_dir = 'D:\RandomVstrAnalysis\temp';
-% cfg_in.output_dir = '/Users/manishm/Work/vanDerMeerLab/RandomVStrDataAnalysis/temp';
+cfg_in.output_dir = 'D:\vStr_oscillatory_switch_results\temp';
 cfg_in.incl_types = [1, 2];
 cfg_in.nMinSpikes1 = 400; % For on track
 cfg_in.nMinSpikes2 = 400; % For near and away
@@ -183,6 +181,7 @@ function od = generateSTS(cfg_in)
         cfg_ft.timwin = [-0.5 0.5];
         cfg_ft.spikechannel = sd.S.ft_spikes(iC).label{1};
         cfg_ft.channel = ft_csc.label(1);
+        cfg_ft.rejectsaturation = 'no';
         this_data = ft_appendspike([], ft_csc, sd.S.ft_spikes(iC));
         % Restrict data to only on-track data
         on_track_data = ft_redefinetrial(cfg_onTrack, this_data);
@@ -207,6 +206,7 @@ function od = generateSTS(cfg_in)
         cfg_sts.taper = 'hanning';
         cfg_sts.spikechannel =  sd.S.ft_spikes(iC).label{1};
         cfg_sts.channel = on_track_data.label{1};
+        cfg_sts.rejectsaturation = 'no';
         this_sts = ft_spiketriggeredspectrum(cfg_sts, on_track_data);
         this_flag = false;
         % Display warning to show that there were Nans in this calculation
@@ -225,6 +225,7 @@ function od = generateSTS(cfg_in)
         cfg_ppc.channel       = this_sts.lfplabel; % selected LFP channels
         cfg_ppc.avgoverchan   = 'weighted';
         cfg_ppc.timwin        = 'all'; % compute over all available spikes in the window
+        cfg_ppc.rejectsaturation = 'no';
         this_ppc              = ft_spiketriggeredspectrum_stat(cfg_ppc,this_sts);
         this_flag = false;
         % Display warning to show that there were Nans in this calculation
@@ -328,6 +329,7 @@ function od = generateSTS(cfg_in)
             cfg_sts.taper = 'hanning';
             cfg_sts.spikechannel =  sd.S.ft_spikes(iC).label{1};
             cfg_sts.channel = near_data.label{1};
+            cfg_sts.rejectsaturation = 'no';
             this_sts = ft_spiketriggeredspectrum(cfg_sts, near_data);
             this_flag = false;
             % Display warning to show that there were Nans in this calculation
@@ -346,6 +348,7 @@ function od = generateSTS(cfg_in)
             cfg_ppc.channel       = this_sts.lfplabel; % selected LFP channels
             cfg_ppc.avgoverchan   = 'weighted';
             cfg_ppc.timwin        = 'all'; % compute over all available spikes in the window
+            cfg_ppc.rejectsaturation = 'no';
             this_ppc              = ft_spiketriggeredspectrum_stat(cfg_ppc,this_sts);
             this_flag = false;
             % Display warning to show that there were Nans in this calculation
@@ -728,6 +731,7 @@ function od = generateSTS(cfg_in)
         cfg_ft.timwin = [-0.5 0.5];
         cfg_ft.spikechannel = sd.S.ft_spikes(iC).label{1};
         cfg_ft.channel = ft_csc.label(1);
+        cfg_ft.rejectsaturation = 'no';
         this_data = ft_appendspike([], ft_csc, sd.S.ft_spikes(iC));
         % Restrict data to only on-track data
         on_track_data = ft_redefinetrial(cfg_onTrack, this_data);
@@ -752,6 +756,7 @@ function od = generateSTS(cfg_in)
         cfg_sts.taper = 'hanning';
         cfg_sts.spikechannel =  sd.S.ft_spikes(iC).label{1};
         cfg_sts.channel = on_track_data.label{1};
+        cfg_sts.rejectsaturation = 'no';
         this_sts = ft_spiketriggeredspectrum(cfg_sts, on_track_data);
         this_flag = false;
         % Display warning to show that there were Nans in this calculation
@@ -770,6 +775,7 @@ function od = generateSTS(cfg_in)
         cfg_ppc.channel       = this_sts.lfplabel; % selected LFP channels
         cfg_ppc.avgoverchan   = 'weighted';
         cfg_ppc.timwin        = 'all'; % compute over all available spikes in the window
+        cfg_ppc.rejectsaturation = 'no';
         this_ppc              = ft_spiketriggeredspectrum_stat(cfg_ppc,this_sts);
         this_flag = false;
         % Display warning to show that there were Nans in this calculation
@@ -903,6 +909,7 @@ function od = generateSTS(cfg_in)
             cfg_sts.taper = 'hanning';
             cfg_sts.spikechannel =  sd.S.ft_spikes(iC).label{1};
             cfg_sts.channel = near_data.label{1};
+            cfg_sts.rejectsaturation = 'no';
             this_sts = ft_spiketriggeredspectrum(cfg_sts, near_data);
             this_flag = false;
             % Display warning to show that there were Nans in this calculation
@@ -921,6 +928,7 @@ function od = generateSTS(cfg_in)
             cfg_ppc.channel       = this_sts.lfplabel; % selected LFP channels
             cfg_ppc.avgoverchan   = 'weighted';
             cfg_ppc.timwin        = 'all'; % compute over all available spikes in the window
+            cfg_ppc.rejectsaturation = 'no';
             this_ppc              = ft_spiketriggeredspectrum_stat(cfg_ppc,this_sts);
             this_flag = false;
             % Display warning to show that there were Nans in this calculation
@@ -1460,7 +1468,6 @@ end
 
 %% Other functions
 
-%%
 function S = LoadSpikesTarget(cfg_in)
     if ~isfield(cfg_in, 'Target') % no target specified, load them all
         S = LoadSpikes([]);
