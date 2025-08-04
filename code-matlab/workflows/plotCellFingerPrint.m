@@ -16,7 +16,6 @@ headers = {'label','lfr_min','lfr_max', 'lfr_mean', 'hfr_min', 'hfr_max', ...
     'lfr_ppc_peak', 'lfr_ppc_diff', 'hfr_ppc_peak', 'hfr_ppc_diff'};
 msn_summary = cell2table(cell(0,length(headers)), 'VariableNames', headers);
 fsi_summary = cell2table(cell(0,length(headers)), 'VariableNames', headers);
-set(groot, 'defaultAxesFontSize', 12);
 %%
 for idx = 1:length(rats)
     curRat = rats{idx};

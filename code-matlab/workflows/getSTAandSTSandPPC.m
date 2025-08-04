@@ -24,7 +24,7 @@ cfg_in.num_subsamples = 1000;
 
 %%
 % Top level loop which calls the main function for all the sessions
-for iS = length(cfg_in.fd)%1:length(cfg_in.fd) % for each session...
+for iS = 1:length(cfg_in.fd) % for each session...
     cfg_in.iS = iS;
     pushdir(cfg_in.fd{iS});
     generateSTS(cfg_in); % do the business
