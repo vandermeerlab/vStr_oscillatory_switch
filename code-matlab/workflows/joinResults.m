@@ -1,7 +1,7 @@
 % Script to join trial-wise and aggregated results packet of 'clean cells'
 cd('D:\RandomVstrAnalysis\temp_with_shuf\');
-tw_dir1 = 'D:\RandomVstrAnalysis\temp\';
-tw_dir2 = 'D:\RandomVstrAnalysis\temp_no_thresh\';
+tw_dir1 = 'D:\vStr_oscillatory_switch_results\temp';
+tw_dir2 = 'D:\RandomVstrAnalysis\final_results';
 rats = {'R117','R119','R131','R132'};
 
 % For now let's select the cells that have no probelmes
@@ -48,7 +48,7 @@ for idx = 1:length(rats)
                 od.msn_res.near_spec{iC}.no_thresh_trialwise_ppc = this_tw2.od.msn_res.near_spec{jC}.trial_wise_ppc;
             end
         end
-        fn_out = cat(2, 'D:\RandomVstrAnalysis\tempFinal\', ofiles(jdx).name);
+        fn_out = cat(2, 'D:\vStr_oscillatory_switch_results\temp2\', ofiles(jdx).name);
         save(fn_out,'od');
     end
 end

@@ -1,7 +1,7 @@
 %% Script to generate cell_finger prints and summary 
-cd('D:\RandomVstrAnalysis\final_results\'); % Change this to your local machine location for results
+cd('D:\vStr_oscillatory_switch_results\temp3'); % Change this to your local machine location for results
 rats = {'R117','R119','R131','R132'};
-odir = 'D:\RandomVstrAnalysis\CellFingerPrint3\';
+odir = 'D:\vStr_oscillatory_switch_results\cellFingerPrint\';
 clean_msn = 0;
 clean_fsi = 0;
 c1 = [75/255 0/255 146/255];  % Violet/Purple
@@ -75,6 +75,9 @@ clean_fsi = only_hfr_fsi & only_lfr_fsi;
 dif_hfr_msn = ~isnan(msn_summary.hfr_ppc_diff);
 dif_lfr_msn = ~isnan(msn_summary.lfr_ppc_diff);
 dif_msn = dif_hfr_msn | dif_lfr_msn;
+dif_hfr_fsi = ~isnan(fsi_summary.hfr_ppc_diff);
+dif_lfr_fsi = ~isnan(fsi_summary.lfr_ppc_dn b  iff);
+dif_fsi = dif_hfr_fsi | dif_lfr_fsi;
 
 bdif_msn = dif_hfr_msn & dif_lfr_msn;
 bdif_fsi = dif_hfr_fsi & dif_lfr_fsi;
@@ -108,9 +111,7 @@ s1.MarkerEdgeAlpha = 1;
 s1.SizeData = 100;
 
 % Outline significant FSI diffs
-dif_hfr_fsi = ~isnan(fsi_summary.hfr_ppc_diff);
-dif_lfr_fsi = ~isnan(fsi_summary.lfr_ppc_diff);
-dif_fsi = dif_hfr_fsi | dif_lfr_fsi;
+
 s1 = scatter(ax1,(fsi_summary.hfr_mean(dif_fsi) - fsi_summary.lfr_mean(dif_fsi)), ...
     (fsi_summary.hfr_ppc_peak(dif_fsi) - fsi_summary.lfr_ppc_peak(dif_fsi)));
 s1.Marker = 'o';

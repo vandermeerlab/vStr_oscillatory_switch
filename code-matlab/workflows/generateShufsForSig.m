@@ -1,7 +1,7 @@
 % Boilerplate code for selecting 'clean cells'
 
-cd('D:\RandomVstrAnalysis\temp2\'); % Change this to your local machine location for results
-odir = ('D:\RandomVstrAnalysis\temp_with_shuf\');
+cd('D:\vStr_oscillatory_switch_results\temp2\'); % Change this to your local machine location for results
+odir = ('D:\vStr_oscillatory_switch_results\temp3\');
 rats = {'R117','R119','R131','R132'};
 clean_msn = 0;
 clean_fsi = 0;
@@ -12,6 +12,12 @@ for idx = 1:length(rats)
     ofiles = dir(searchString);
     for jdx = 1:length(ofiles)
         load(ofiles(jdx).name); % Load a particular session
+%         % manishm edit (only redo these for files where pooled sts is nan)
+%         out_res = load(strcat(odir, ofiles(jdx).name));
+%         if ~any(isnan(out_res.od.pool_sts.fourierspctrm{1}(:)))
+%             continue
+%         end
+        clear out_res
         % do fsi stuff
         fsi_labels  = od.label(od.cell_type == 2);
         fsi_labels = cellfun(@(x) extractBefore(x, '.t'), fsi_labels, 'UniformOutput', false);
