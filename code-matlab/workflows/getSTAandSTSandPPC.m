@@ -1,4 +1,4 @@
-%% script to generate STA spectra and average STS on a trial-by trial basis as well as for binned trials
+%% script to generate STA spectra and average STS for binned trials
 % trials are binned on the basis of mean firing rate in the trial such that
 % the number of spikes in each of the bins are as close as possible
 % The spectra for the FSIs are calculated after multiple rounds of
