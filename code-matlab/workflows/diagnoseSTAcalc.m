@@ -24,7 +24,7 @@ cfg_in.num_subsamples = 1000;
 
 % SPECIFIC CELL ANALYSIS PARAMETERS
 % Option 1: Single cell (uncomment and modify the line below)
-% cell_name = 'R132-2007-10-21-TT12_4.t'; % Change this to your target cell name
+% cell_name = 'R117-2007-06-01-TT04_2.t'; % Change this to your target cell name
 
 % Option 2: Multiple cells from text file (uncomment and modify the line below)
 cell_list_file = 'D:\vStr_oscillatory_switch_results\temp4\fsi_list.txt'; % Text file with one cell name per line
@@ -359,7 +359,7 @@ function new_results = calculateNewMeasures(cfg_in, cfg_master, sd, iC, ft_csc, 
         new_results.ppc = this_ppc.ppc0'; % default fallback
     end
     
-         % Also calculate PLV and PPC0 for comparison
+     % Also calculate PLV and PPC0 for comparison
      cfg_plv = [];
      cfg_plv.method = 'plv';
      cfg_plv.spikechannel = this_sts.label;
@@ -491,6 +491,12 @@ function new_results = calculateNearRewardMeasures(cfg_in, cfg_master, sd, iC, t
             hfr_idx = [hfr_idx, find(near_data.trial{hfr_trl_idx(iT)}(2,:))];
         end
         
+        % Ensure indices are within bounds
+        if ~isempty(hfr_idx)
+            max_idx = size(this_sts.fourierspctrm{1}, 1);
+            hfr_idx = hfr_idx(hfr_idx <= max_idx & hfr_idx > 0);
+        end
+        
         hfr_sts = this_sts;
         hfr_sts.fourierspctrm{1} = hfr_sts.fourierspctrm{1}(hfr_idx,:,:);
         hfr_sts.time{1} = hfr_sts.time{1}(hfr_idx,:);
@@ -554,13 +560,19 @@ function new_results = calculateNearRewardMeasures(cfg_in, cfg_master, sd, iC, t
         new_results.near_lfr.sta_vals = lfr_sta.avg(:,:)';
         new_results.near_lfr.spk_count = sum(cell2mat(all_tspikes(lfr_trials)));
         
-        % STS and PPC
-        lfr_idx = [];
-        for iT = 1:length(lfr_trl_idx)
-            lfr_idx = [lfr_idx, find(near_data.trial{lfr_trl_idx(iT)}(2,:))];
-        end
-        
-        lfr_sts = this_sts;
+                 % STS and PPC
+         lfr_idx = [];
+         for iT = 1:length(lfr_trl_idx)
+             lfr_idx = [lfr_idx, find(near_data.trial{lfr_trl_idx(iT)}(2,:))];
+         end
+         
+         % Ensure indices are within bounds
+         if ~isempty(lfr_idx)
+             max_idx = size(this_sts.fourierspctrm{1}, 1);
+             lfr_idx = lfr_idx(lfr_idx <= max_idx & lfr_idx > 0);
+         end
+         
+         lfr_sts = this_sts;
         lfr_sts.fourierspctrm{1} = lfr_sts.fourierspctrm{1}(lfr_idx,:,:);
         lfr_sts.time{1} = lfr_sts.time{1}(lfr_idx,:);
         lfr_sts.trial{1} = lfr_sts.trial{1}(lfr_idx,:);
