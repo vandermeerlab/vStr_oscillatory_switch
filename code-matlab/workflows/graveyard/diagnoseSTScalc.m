@@ -729,16 +729,26 @@ function plotCellComparison(cfg_in, cell_label, existing_results, new_results)
      ax5.Visible = 'off';
      ax5.Box = 'off';
     
-    % Overlay existing subsampled measures if available (only on PPC0 plot)
+    % Overlay existing subsampled measures if available (on PPC0 and STS plots)
     if ~isempty(existing_results)
-        overlayExistingMeasures(ax3, existing_results, new_results);
+        overlayExistingMeasures(ax3, existing_results, new_results, 'ppc0'); % PPC0 plot
+        overlayExistingMeasures(ax2, existing_results, new_results, 'sts');  % STS plot
     end
     
     % Set legends at the end to avoid conflicts
-    legend(ax1, {'LFR', 'HFR', 'All Trials'}, 'Location', 'best');
-    legend(ax2, {'LFR', 'HFR', 'All Trials'}, 'Location', 'best');
-    legend(ax3, {'LFR', 'HFR', 'All Trials'}, 'Location', 'best');
-    legend(ax6, {'LFR', 'HFR', 'All Trials'}, 'Location', 'best');
+    if isfield(new_results, 'near_lfr') && isfield(new_results, 'near_hfr')
+        lfr_spikes = new_results.near_lfr.spk_count;
+        hfr_spikes = new_results.near_hfr.spk_count;
+        legend(ax1, {sprintf('LFR (%d spikes)', lfr_spikes), sprintf('HFR (%d spikes)', hfr_spikes), 'All Trials'}, 'Location', 'best');
+        legend(ax2, {'LFR', 'HFR', 'All Trials'}, 'Location', 'best');
+        legend(ax3, {'LFR', 'HFR', 'All Trials'}, 'Location', 'best');
+        legend(ax6, {'LFR', 'HFR', 'All Trials'}, 'Location', 'best');
+    else
+        legend(ax1, {'All Trials'}, 'Location', 'best');
+        legend(ax2, {'All Trials'}, 'Location', 'best');
+        legend(ax3, {'All Trials'}, 'Location', 'best');
+        legend(ax6, {'All Trials'}, 'Location', 'best');
+    end
     
     % Save figure
     [~, fp, ~] = fileparts(pwd);
@@ -751,35 +761,44 @@ end
 
 %%
 % Function to overlay existing subsampled measures
-function overlayExistingMeasures(ax_ppc0, existing_results, new_results)
+function overlayExistingMeasures(ax_plot, existing_results, new_results, plot_type)
     
     % Define colors for existing results
     c_existing_all = [0 0 0];        % Black for all trials
     c_existing_hfr = [1 0.5 0];      % Orange for HFR
     c_existing_lfr = [0 1 1];        % Cyan for LFR
     
-    % Overlay on PPC0 plot only
+    % Overlay on the specified plot
     if isfield(existing_results, 'fsi')
         fsi_idx = existing_results.cell_idx;
         if length(existing_results.fsi.onTrack_spec) >= fsi_idx
-            % Overlay subsampled PPC0 for all trials
-            if isfield(existing_results.fsi.onTrack_spec{fsi_idx}, 'subsampled_ppc')
-                plot(ax_ppc0, new_results.freqs, existing_results.fsi.onTrack_spec{fsi_idx}.subsampled_ppc, ...
+            % Overlay subsampled measures for all trials
+            if strcmp(plot_type, 'ppc0') && isfield(existing_results.fsi.onTrack_spec{fsi_idx}, 'subsampled_ppc')
+                plot(ax_plot, new_results.freqs, existing_results.fsi.onTrack_spec{fsi_idx}.subsampled_ppc, ...
+                    'Color', c_existing_all, 'LineStyle', '--', 'LineWidth', 1.5);
+            elseif strcmp(plot_type, 'sts') && isfield(existing_results.fsi.onTrack_spec{fsi_idx}, 'subsampled_sts')
+                plot(ax_plot, new_results.freqs, existing_results.fsi.onTrack_spec{fsi_idx}.subsampled_sts, ...
                     'Color', c_existing_all, 'LineStyle', '--', 'LineWidth', 1.5);
             end
             
-            % Overlay HFR subsampled PPC0
+            % Overlay HFR subsampled measures
             if isfield(existing_results.fsi, 'near_hfr_spec') && length(existing_results.fsi.near_hfr_spec) >= fsi_idx
-                if isfield(existing_results.fsi.near_hfr_spec{fsi_idx}, 'subsampled_ppc')
-                    plot(ax_ppc0, new_results.freqs, existing_results.fsi.near_hfr_spec{fsi_idx}.subsampled_ppc, ...
+                if strcmp(plot_type, 'ppc0') && isfield(existing_results.fsi.near_hfr_spec{fsi_idx}, 'subsampled_ppc')
+                    plot(ax_plot, new_results.freqs, existing_results.fsi.near_hfr_spec{fsi_idx}.subsampled_ppc, ...
+                        'Color', c_existing_hfr, 'LineStyle', ':', 'LineWidth', 1.5);
+                elseif strcmp(plot_type, 'sts') && isfield(existing_results.fsi.near_hfr_spec{fsi_idx}, 'subsampled_sts')
+                    plot(ax_plot, new_results.freqs, existing_results.fsi.near_hfr_spec{fsi_idx}.subsampled_sts, ...
                         'Color', c_existing_hfr, 'LineStyle', ':', 'LineWidth', 1.5);
                 end
             end
             
-            % Overlay LFR subsampled PPC0
+            % Overlay LFR subsampled measures
             if isfield(existing_results.fsi, 'near_lfr_spec') && length(existing_results.fsi.near_lfr_spec) >= fsi_idx
-                if isfield(existing_results.fsi.near_lfr_spec{fsi_idx}, 'subsampled_ppc')
-                    plot(ax_ppc0, new_results.freqs, existing_results.fsi.near_lfr_spec{fsi_idx}.subsampled_ppc, ...
+                if strcmp(plot_type, 'ppc0') && isfield(existing_results.fsi.near_lfr_spec{fsi_idx}, 'subsampled_ppc')
+                    plot(ax_plot, new_results.freqs, existing_results.fsi.near_lfr_spec{fsi_idx}.subsampled_ppc, ...
+                        'Color', c_existing_lfr, 'LineStyle', ':', 'LineWidth', 1.5);
+                elseif strcmp(plot_type, 'sts') && isfield(existing_results.fsi.near_lfr_spec{fsi_idx}, 'subsampled_sts')
+                    plot(ax_plot, new_results.freqs, existing_results.fsi.near_lfr_spec{fsi_idx}.subsampled_sts, ...
                         'Color', c_existing_lfr, 'LineStyle', ':', 'LineWidth', 1.5);
                 end
             end
@@ -787,35 +806,48 @@ function overlayExistingMeasures(ax_ppc0, existing_results, new_results)
     elseif isfield(existing_results, 'msn')
         msn_idx = existing_results.cell_idx;
         if length(existing_results.msn.onTrack_spec) >= msn_idx
-            % Overlay subsampled PPC0 for all trials
-            if isfield(existing_results.msn.onTrack_spec{msn_idx}, 'subsampled_ppc')
-                plot(ax_ppc0, new_results.freqs, existing_results.msn.onTrack_spec{msn_idx}.subsampled_ppc, ...
+            % Overlay subsampled measures for all trials
+            if strcmp(plot_type, 'ppc0') && isfield(existing_results.msn.onTrack_spec{msn_idx}, 'subsampled_ppc')
+                plot(ax_plot, new_results.freqs, existing_results.msn.onTrack_spec{msn_idx}.subsampled_ppc, ...
+                    'Color', c_existing_all, 'LineStyle', '--', 'LineWidth', 1.5);
+            elseif strcmp(plot_type, 'sts') && isfield(existing_results.msn.onTrack_spec{msn_idx}, 'subsampled_sts')
+                plot(ax_plot, new_results.freqs, existing_results.msn.onTrack_spec{msn_idx}.subsampled_sts, ...
                     'Color', c_existing_all, 'LineStyle', '--', 'LineWidth', 1.5);
             end
             
-            % Overlay HFR subsampled PPC0
+            % Overlay HFR subsampled measures
             if isfield(existing_results.msn, 'near_hfr_spec') && length(existing_results.msn.near_hfr_spec) >= msn_idx
-                if isfield(existing_results.msn.near_hfr_spec{msn_idx}, 'subsampled_ppc')
-                    plot(ax_ppc0, new_results.freqs, existing_results.msn.near_hfr_spec{msn_idx}.subsampled_ppc, ...
+                if strcmp(plot_type, 'ppc0') && isfield(existing_results.msn.near_hfr_spec{msn_idx}, 'subsampled_ppc')
+                    plot(ax_plot, new_results.freqs, existing_results.msn.near_hfr_spec{msn_idx}.subsampled_ppc, ...
+                        'Color', c_existing_hfr, 'LineStyle', ':', 'LineWidth', 1.5);
+                elseif strcmp(plot_type, 'sts') && isfield(existing_results.msn.near_hfr_spec{msn_idx}, 'subsampled_sts')
+                    plot(ax_plot, new_results.freqs, existing_results.msn.near_hfr_spec{msn_idx}.subsampled_sts, ...
                         'Color', c_existing_hfr, 'LineStyle', ':', 'LineWidth', 1.5);
                 end
             end
             
-            % Overlay LFR subsampled PPC0
+            % Overlay LFR subsampled measures
             if isfield(existing_results.msn, 'near_lfr_spec') && length(existing_results.msn.near_lfr_spec) >= msn_idx
-                if isfield(existing_results.msn.near_lfr_spec{msn_idx}, 'subsampled_ppc')
-                    plot(ax_ppc0, new_results.freqs, existing_results.msn.near_lfr_spec{msn_idx}.subsampled_ppc, ...
+                if strcmp(plot_type, 'ppc0') && isfield(existing_results.msn.near_lfr_spec{msn_idx}, 'subsampled_ppc')
+                    plot(ax_plot, new_results.freqs, existing_results.msn.near_lfr_spec{msn_idx}.subsampled_ppc, ...
+                        'Color', c_existing_lfr, 'LineStyle', ':', 'LineWidth', 1.5);
+                elseif strcmp(plot_type, 'sts') && isfield(existing_results.msn.near_lfr_spec{msn_idx}, 'subsampled_sts')
+                    plot(ax_plot, new_results.freqs, existing_results.msn.near_lfr_spec{msn_idx}.subsampled_sts, ...
                         'Color', c_existing_lfr, 'LineStyle', ':', 'LineWidth', 1.5);
                 end
             end
         end
     end
     
-    % Update legend for PPC0 plot
-    if isfield(ax_ppc0, 'Legend')
-        current_legend = ax_ppc0.Legend.String;
-        new_legend = [current_legend, 'Subsampled All (black --)', 'Subsampled HFR (orange :)', 'Subsampled LFR (cyan :)'];
-        ax_ppc0.Legend.String = new_legend;
+    % Update legend for the plot
+    if isfield(ax_plot, 'Legend')
+        current_legend = ax_plot.Legend.String;
+        if strcmp(plot_type, 'ppc0')
+            new_legend = [current_legend, 'Subsampled All (black --)', 'Subsampled HFR (orange :)', 'Subsampled LFR (cyan :)'];
+        elseif strcmp(plot_type, 'sts')
+            new_legend = [current_legend, 'Subsampled All (black --)', 'Subsampled HFR (orange :)', 'Subsampled LFR (cyan :)'];
+        end
+        ax_plot.Legend.String = new_legend;
     end
 end
 
