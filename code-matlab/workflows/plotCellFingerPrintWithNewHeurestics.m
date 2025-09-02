@@ -13,13 +13,20 @@ pl_thresh = 99; % Percentile threshold to establish significance of phase lockin
 diff_thresh = 95; % Percentile threshold to establish significance of PPC difference
 peak_freq_tol_win = 5; % Window around peak frequency for diff analysis (Hz)
 
-% Updated headers with peak magnitudes
+% Load artifact cell list
+fid = fopen('D:\vStr_oscillatory_switch\sta_artifact_cells.txt', 'r');
+artifact_cell_list = textscan(fid, '%s', 'Delimiter', '\n', 'Whitespace', '');
+fclose(fid);
+artifact_cell_list = artifact_cell_list{1};
+% Remove any empty lines
+artifact_cell_list = artifact_cell_list(~cellfun(@isempty, artifact_cell_list));
+
+% Updated headers without overall peaks
 headers = {'label', 'lfr_min', 'lfr_max', 'lfr_mean', 'hfr_min', ...
     'hfr_max', 'hfr_mean', 'lfr_sts_peak', 'lfr_sts_diff', ...
     'hfr_sts_peak', 'hfr_sts_diff', 'lfr_ppc_peak', 'lfr_ppc_diff', ...
     'hfr_ppc_peak', 'hfr_ppc_diff', 'lfr_sts_peak_mag', 'hfr_sts_peak_mag', ...
-    'lfr_ppc_peak_mag', 'hfr_ppc_peak_mag', 'lfr_sts_overall_peak', ...
-    'hfr_sts_overall_peak', 'lfr_sts_overall_peak_mag', 'hfr_sts_overall_peak_mag'};
+    'lfr_ppc_peak_mag', 'hfr_ppc_peak_mag'};
 
 msn_summary = cell2table(cell(0,length(headers)), 'VariableNames', headers);
 fsi_summary = cell2table(cell(0,length(headers)), 'VariableNames', headers);
@@ -39,7 +46,7 @@ for idx = 1:length(rats)
             [fsi_results_table, clean_fsi_count] = process_cell_type(od.fsi_res, fsi_labels, 'FSI', ...
                 struct('c1',c1,'c2',c2,'c3',c3,'c4',c4), ...
                 struct('min_freq',min_freq,'pl_thresh',pl_thresh,'diff_thresh',diff_thresh,'peak_freq_tol_win',peak_freq_tol_win,'odir',odir), ...
-                headers);
+                headers, artifact_cell_list);
             fsi_summary = [fsi_summary; fsi_results_table];
             clean_fsi = clean_fsi + clean_fsi_count;
         end
@@ -51,7 +58,7 @@ for idx = 1:length(rats)
             [msn_results_table, clean_msn_count] = process_cell_type(od.msn_res, msn_labels, 'MSN', ...
                 struct('c1',c1,'c2',c2,'c3',c3,'c4',c4), ...
                 struct('min_freq',min_freq,'pl_thresh',pl_thresh,'diff_thresh',diff_thresh,'peak_freq_tol_win',peak_freq_tol_win,'odir',odir), ...
-                headers);
+                headers, artifact_cell_list);
             msn_summary = [msn_summary; msn_results_table];
             clean_msn = clean_msn + clean_msn_count;
         end
@@ -60,348 +67,146 @@ end
 
 fprintf("Total number of clean MSNs are %d.\n", clean_msn);
 fprintf("Total number of clean FSIs are %d.\n", clean_fsi);
-writetable(msn_summary, strcat(odir,'msn_summary.csv'));
-writetable(fsi_summary, strcat(odir,'fsi_summary.csv'));
-%% Old summary viz 
-% Scatter plot of MSNs and FSIs that have both significantly phase-locked HFR and LFR peaks
-only_hfr_msn = ~isnan(msn_summary.hfr_ppc_peak);
-only_lfr_msn = ~isnan(msn_summary.lfr_ppc_peak);
-clean_msn = only_hfr_msn & only_lfr_msn;
+save(strcat(odir,'msn_summary.mat'), 'msn_summary');
+save(strcat(odir,'fsi_summary.mat'), 'fsi_summary');
 
-only_hfr_fsi = ~isnan(fsi_summary.hfr_ppc_peak);
-only_lfr_fsi = ~isnan(fsi_summary.lfr_ppc_peak);
-clean_fsi = only_hfr_fsi & only_lfr_fsi;
-
-dif_hfr_msn = ~isnan(msn_summary.hfr_ppc_diff);
-dif_lfr_msn = ~isnan(msn_summary.lfr_ppc_diff);
-dif_msn = dif_hfr_msn | dif_lfr_msn;
-dif_hfr_fsi = ~isnan(fsi_summary.hfr_ppc_diff);
-dif_lfr_fsi = ~isnan(fsi_summary.lfr_ppc_dn b  iff);
-dif_fsi = dif_hfr_fsi | dif_lfr_fsi;
-
-bdif_msn = dif_hfr_msn & dif_lfr_msn;
-bdif_fsi = dif_hfr_fsi & dif_lfr_fsi;
-
-fig = figure('WindowState', 'maximized');
-ax1 = subplot(2,2,1);
-s1 = scatter(ax1,(msn_summary.hfr_mean(clean_msn) - msn_summary.lfr_mean(clean_msn)), ...
-    (msn_summary.hfr_ppc_peak(clean_msn) - msn_summary.lfr_ppc_peak(clean_msn)));
-s1.Marker = 'o';
-s1.MarkerFaceColor = c4;
-s1.MarkerFaceAlpha = 0.5;
-s1.MarkerEdgeAlpha = 0;
-s1.SizeData = 100;
-hold on
-
-s1 = scatter(ax1, (fsi_summary.hfr_mean(clean_fsi) - fsi_summary.lfr_mean(clean_fsi)), ...
-    (fsi_summary.hfr_ppc_peak(clean_fsi) - fsi_summary.lfr_ppc_peak(clean_fsi)));
-s1.Marker = 'o';
-s1.MarkerFaceColor = 'blue';
-s1.MarkerFaceAlpha = 0.5;
-s1.MarkerEdgeAlpha = 0;
-s1.SizeData = 100;
-
-% Outline significant MSN diffs
-s1 = scatter(ax1,(msn_summary.hfr_mean(dif_msn) - msn_summary.lfr_mean(dif_msn)), ...
-    (msn_summary.hfr_ppc_peak(dif_msn) - msn_summary.lfr_ppc_peak(dif_msn)));
-s1.Marker = 'o';
-s1.MarkerEdgeColor = 'black';
-s1.MarkerFaceAlpha = 0;
-s1.MarkerEdgeAlpha = 1;
-s1.SizeData = 100;
-
-% Outline significant FSI diffs
-
-s1 = scatter(ax1,(fsi_summary.hfr_mean(dif_fsi) - fsi_summary.lfr_mean(dif_fsi)), ...
-    (fsi_summary.hfr_ppc_peak(dif_fsi) - fsi_summary.lfr_ppc_peak(dif_fsi)));
-s1.Marker = 'o';
-s1.MarkerEdgeColor = 'black';
-s1.MarkerFaceAlpha = 0;
-s1.MarkerEdgeAlpha = 1;
-s1.SizeData = 100;
-
-ax1.XLabel.String = '\Delta F.R';
-ax1.YLabel.String = '\Delta Freq';
-ax1.FontSize = 16;
-
-legend({sprintf('MSNs: %d/%d, diff: %d ', sum(clean_msn), length(clean_msn), sum(dif_msn)), ...
-    sprintf('FSIs: %d/%d, diff: %d ', sum(clean_fsi), length(clean_fsi), sum(dif_fsi))}, 'FontSize', 14, 'Location', 'best');
-% Scatter plot of MSNs with significant diffs
-ax1 = subplot(2,2,2);
-hold off;
-s1 = scatter(ax1,(msn_summary.hfr_mean(dif_hfr_msn) - msn_summary.lfr_mean(dif_hfr_msn)), ...
-    msn_summary.hfr_ppc_diff(dif_hfr_msn));
-s1.Marker = 'o';
-s1.MarkerFaceColor = c2;
-s1.MarkerFaceAlpha = 0.5;
-s1.MarkerEdgeAlpha = 0;
-s1.SizeData = 100;
-hold on
-s1 = scatter(ax1,(msn_summary.hfr_mean(dif_lfr_msn) - msn_summary.lfr_mean(dif_lfr_msn)), ...
-    msn_summary.lfr_ppc_diff(dif_lfr_msn));
-s1.Marker = 'o';
-s1.MarkerFaceColor = c1;
-s1.MarkerFaceAlpha = 0.5;
-s1.MarkerEdgeAlpha = 0;
-s1.SizeData = 100;
-    
-ax1.XLabel.String = '\Delta F.R';
-ax1.YLabel.String = 'Freq. of sig difference';
-ax1.FontSize = 16;
-ax1.Title.String = 'Sig diff MSNs';
-
-legend({sprintf('sig HFR: %d/%d', sum(dif_hfr_msn), sum(clean_msn)), ...
-    sprintf('sig LFR: %d/%d', sum(dif_lfr_msn), sum(clean_msn))}, 'FontSize', 14, 'Location', 'best')
-
-% Scatter plot of FSIs with significant diffs
-ax1 = subplot(2,2,3);
-hold off;
-s1 = scatter(ax1,(fsi_summary.hfr_mean(dif_hfr_fsi) - fsi_summary.lfr_mean(dif_hfr_fsi)), ...
-    fsi_summary.hfr_ppc_diff(dif_hfr_fsi));
-s1.Marker = 'o';
-s1.MarkerFaceColor = c2;
-s1.MarkerFaceAlpha = 0.5;
-s1.MarkerEdgeAlpha = 0;
-s1.SizeData = 100;
-hold on
-s1 = scatter(ax1,(fsi_summary.hfr_mean(dif_lfr_fsi) - fsi_summary.lfr_mean(dif_lfr_fsi)), ...
-    fsi_summary.lfr_ppc_diff(dif_lfr_fsi));
-s1.Marker = 'o';
-s1.MarkerFaceColor = c1;
-s1.MarkerFaceAlpha = 0.5;
-s1.MarkerEdgeAlpha = 0;
-s1.SizeData = 100;
-    
-ax1.XLabel.String = '\Delta F.R';
-ax1.YLabel.String = 'Freq. of sig difference';
-ax1.FontSize = 16;
-ax1.Title.String = 'Sig diff FSIs';
-
-legend({sprintf('sig HFR: %d/%d', sum(dif_hfr_fsi), sum(clean_fsi)), ...
-    sprintf('sig LFR: %d/%d', sum(dif_lfr_fsi), sum(clean_fsi))}, 'FontSize', 14, 'Location', 'best')
-
-% Scatter plot of both sig
-ax1 = subplot(2,2,4);
-hold off
-s1 = scatter(ax1,(msn_summary.hfr_mean(bdif_msn) - msn_summary.lfr_mean(bdif_msn)), ...
-    (msn_summary.hfr_ppc_diff(bdif_msn) - msn_summary.lfr_ppc_diff(bdif_msn)));
-s1.Marker = 'o';
-s1.MarkerFaceColor = c4;
-s1.MarkerFaceAlpha = 0.5;
-s1.MarkerEdgeAlpha = 0;
-s1.SizeData = 100;
-hold on
-
-s1 = scatter(ax1, (fsi_summary.hfr_mean(bdif_fsi) - fsi_summary.lfr_mean(bdif_fsi)), ...
-    (fsi_summary.hfr_ppc_diff(bdif_fsi) - fsi_summary.lfr_ppc_diff(bdif_fsi)));
-s1.Marker = 'o';
-s1.MarkerFaceColor = 'blue';
-s1.MarkerFaceAlpha = 0.5;
-s1.MarkerEdgeAlpha = 0;
-s1.SizeData = 100;
-
-ax1.XLabel.String = '\Delta F.R';
-ax1.YLabel.String = '\Delta Freq Sig';
-ax1.FontSize = 16;
-ax1.YLim = [-100 100];
-
-legend({sprintf('MSNs: %d', sum(bdif_msn)), sprintf('FSIs: %d', sum(bdif_fsi))}, ...
-    'FontSize', 14, 'Location', 'best');
-
-%% Apply masks for various cases
-% Define colors (same scheme as before)
+%% Summary visualization
+% Define colors
 c1 = [75/255 0/255 146/255];  % Violet/Purple for LFR
 c2 = [26/255 255/255 26/255]; % Green for HFR
 c3 = [0.7 0.7 0.7]; % Gray
 c4 = [0.8500 0.3250 0.0980]; % Orange
 
-% Define masks
-only_hfr_msn = ~isnan(msn_summary.hfr_ppc_peak);
-only_lfr_msn = ~isnan(msn_summary.lfr_ppc_peak);
+% Define masks for cells with significant phase locking in both HFR and LFR
+only_hfr_msn = ~isnan(msn_summary.hfr_sts_peak);
+only_lfr_msn = ~isnan(msn_summary.lfr_sts_peak);
 clean_msn = only_hfr_msn & only_lfr_msn;
 
-only_hfr_fsi = ~isnan(fsi_summary.hfr_ppc_peak);
-only_lfr_fsi = ~isnan(fsi_summary.lfr_ppc_peak);
+only_hfr_fsi = ~isnan(fsi_summary.hfr_sts_peak);
+only_lfr_fsi = ~isnan(fsi_summary.lfr_sts_peak);
 clean_fsi = only_hfr_fsi & only_lfr_fsi;
 
+% Define masks for significant PPC differences
 dif_hfr_msn = ~isnan(msn_summary.hfr_ppc_diff);
 dif_lfr_msn = ~isnan(msn_summary.lfr_ppc_diff);
 dif_hfr_fsi = ~isnan(fsi_summary.hfr_ppc_diff);
 dif_lfr_fsi = ~isnan(fsi_summary.lfr_ppc_diff);
 
-%% New summary viz 1
-% Scatter plot of both sig
-
+% Create figure
 fig = figure('WindowState', 'maximized');
 ax1 = gca;
-s1 = scatter(ax1,(msn_summary.hfr_mean(bdif_msn) - msn_summary.lfr_mean(bdif_msn)), ...
-    (msn_summary.hfr_ppc_diff(bdif_msn) - msn_summary.lfr_ppc_diff(bdif_msn)));
-s1.Marker = 'o';
-s1.MarkerFaceColor = c4;
-s1.MarkerFaceAlpha = 0.5;
-s1.MarkerEdgeAlpha = 0;
-s1.SizeData = 100;
-hold on
 
-s1 = scatter(ax1, (fsi_summary.hfr_mean(bdif_fsi) - fsi_summary.lfr_mean(bdif_fsi)), ...
-    (fsi_summary.hfr_ppc_diff(bdif_fsi) - fsi_summary.lfr_ppc_diff(bdif_fsi)));
-s1.Marker = 'o';
-s1.MarkerFaceColor = 'blue';
-s1.MarkerFaceAlpha = 0.5;
-s1.MarkerEdgeAlpha = 0;
-s1.SizeData = 100;
+% Plot MSNs
+msn_delta_fr = msn_summary.hfr_mean(clean_msn) - msn_summary.lfr_mean(clean_msn);
+msn_delta_freq = msn_summary.hfr_sts_peak(clean_msn) - msn_summary.lfr_sts_peak(clean_msn);
 
-ax1.XLabel.String = '\Delta F.R';
-ax1.YLabel.String = '\Delta Freq Sig';
+% MSNs with no significant PPC diff
+no_diff_msn = clean_msn & ~dif_hfr_msn & ~dif_lfr_msn;
+if sum(no_diff_msn) > 0
+    s1 = scatter(ax1, msn_delta_fr(no_diff_msn), msn_delta_freq(no_diff_msn), 100, c4, 'filled', 'MarkerFaceAlpha', 0.6);
+end
+
+% MSNs with only HFR significant PPC diff
+only_hfr_diff_msn = clean_msn & dif_hfr_msn & ~dif_lfr_msn;
+if sum(only_hfr_diff_msn) > 0
+    s2 = scatter(ax1, msn_delta_fr(only_hfr_diff_msn), msn_delta_freq(only_hfr_diff_msn), 100, c4, 'filled', 'MarkerFaceAlpha', 0.6);
+    % Add '|' marker
+    text(msn_delta_fr(only_hfr_diff_msn), msn_delta_freq(only_hfr_diff_msn), '|', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'white');
+end
+
+% MSNs with only LFR significant PPC diff
+only_lfr_diff_msn = clean_msn & ~dif_hfr_msn & dif_lfr_msn;
+if sum(only_lfr_diff_msn) > 0
+    s3 = scatter(ax1, msn_delta_fr(only_lfr_diff_msn), msn_delta_freq(only_lfr_diff_msn), 100, c4, 'filled', 'MarkerFaceAlpha', 0.6);
+    % Add '_' marker
+    text(msn_delta_fr(only_lfr_diff_msn), msn_delta_freq(only_lfr_diff_msn), '_', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'white');
+end
+
+% MSNs with both HFR and LFR significant PPC diff
+both_diff_msn = clean_msn & dif_hfr_msn & dif_lfr_msn;
+if sum(both_diff_msn) > 0
+    s4 = scatter(ax1, msn_delta_fr(both_diff_msn), msn_delta_freq(both_diff_msn), 100, c4, 'filled', 'MarkerFaceAlpha', 0.6);
+    % Add both '|' and '_' markers
+    text(msn_delta_fr(both_diff_msn), msn_delta_freq(both_diff_msn), '|_', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'white');
+end
+
+hold on;
+
+% Plot FSIs
+fsi_delta_fr = fsi_summary.hfr_mean(clean_fsi) - fsi_summary.lfr_mean(clean_fsi);
+fsi_delta_freq = fsi_summary.hfr_sts_peak(clean_fsi) - fsi_summary.lfr_sts_peak(clean_fsi);
+
+% FSIs with no significant PPC diff
+no_diff_fsi = clean_fsi & ~dif_hfr_fsi & ~dif_lfr_fsi;
+if sum(no_diff_fsi) > 0
+    s5 = scatter(ax1, fsi_delta_fr(no_diff_fsi), fsi_delta_freq(no_diff_fsi), 100, 'blue', 'filled', 'MarkerFaceAlpha', 0.6);
+end
+
+% FSIs with only HFR significant PPC diff
+only_hfr_diff_fsi = clean_fsi & dif_hfr_fsi & ~dif_lfr_fsi;
+if sum(only_hfr_diff_fsi) > 0
+    s6 = scatter(ax1, fsi_delta_fr(only_hfr_diff_fsi), fsi_delta_freq(only_hfr_diff_fsi), 100, 'blue', 'filled', 'MarkerFaceAlpha', 0.6);
+    % Add '|' marker
+    text(fsi_delta_fr(only_hfr_diff_fsi), fsi_delta_freq(only_hfr_diff_fsi), '|', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'white');
+end
+
+% FSIs with only LFR significant PPC diff
+only_lfr_diff_fsi = clean_fsi & ~dif_hfr_fsi & dif_lfr_fsi;
+if sum(only_lfr_diff_fsi) > 0
+    s7 = scatter(ax1, fsi_delta_fr(only_lfr_diff_fsi), fsi_delta_freq(only_lfr_diff_fsi), 100, 'blue', 'filled', 'MarkerFaceAlpha', 0.6);
+    % Add '_' marker
+    text(fsi_delta_fr(only_lfr_diff_fsi), fsi_delta_freq(only_lfr_diff_fsi), '_', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'white');
+end
+
+% FSIs with both HFR and LFR significant PPC diff
+both_diff_fsi = clean_fsi & dif_hfr_fsi & dif_lfr_fsi;
+if sum(both_diff_fsi) > 0
+    s8 = scatter(ax1, fsi_delta_fr(both_diff_fsi), fsi_delta_freq(both_diff_fsi), 100, 'blue', 'filled', 'MarkerFaceAlpha', 0.6);
+    % Add both '|' and '_' markers
+    text(fsi_delta_fr(both_diff_fsi), fsi_delta_freq(both_diff_fsi), '|_', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'white');
+end
+
+ax1.XLabel.String = '\Delta Firing Rate';
+ax1.YLabel.String = '\Delta Peak Frequency (Hz)';
 ax1.FontSize = 16;
-ax1.YLim = [-100 100];
+ax1.Title.String = 'Delta Firing Rate vs Delta Peak Frequency';
 
-legend({sprintf('MSNs: %d', sum(bdif_msn)), sprintf('FSIs: %d', sum(bdif_fsi))}, ...
-    'FontSize', 14, 'Location', 'best');
+% Create legend
+legend_entries = {};
+legend_handles = [];
 
-%% New summary viz 2
-% Define bin edges for 10 bins from 0-100 (each bin is 10 Hz wide)
-bin_edges = 0:10:100;
+if sum(clean_msn) > 0
+    legend_entries{end+1} = sprintf('MSN: %d cells', sum(clean_msn));
+    legend_handles(end+1) = scatter(NaN, NaN, 100, c4, 'filled', 'MarkerFaceAlpha', 0.6);
+end
 
-% Create figure
-fig = figure('WindowState', 'maximized');
+if sum(clean_fsi) > 0
+    legend_entries{end+1} = sprintf('FSI: %d cells', sum(clean_fsi));
+    legend_handles(end+1) = scatter(NaN, NaN, 100, 'blue', 'filled', 'MarkerFaceAlpha', 0.6);
+end
 
-% Left subplot - MSNs
-subplot(1,2,1);
-hold on;
-h1 = histogram(msn_summary.hfr_ppc_diff(dif_hfr_msn), bin_edges, 'FaceColor', c2, 'FaceAlpha', 0.25, 'EdgeColor', c2);
-h2 = histogram(msn_summary.lfr_ppc_diff(dif_lfr_msn), bin_edges, 'FaceColor', c1, 'FaceAlpha', 0.25, 'EdgeColor', c1);
-xlabel('Frequency (Hz)');
-ylabel('Count');
-title('MSN PPC Diff Frequencies');
-legend({sprintf('HFR: n=%d', sum(dif_hfr_msn)), sprintf('LFR: n=%d', sum(dif_lfr_msn))}, 'Location', 'best');
-% grid on;
+if sum(only_hfr_diff_msn) > 0 || sum(only_hfr_diff_fsi) > 0
+    legend_entries{end+1} = '| = HFR PPC diff only';
+    legend_handles(end+1) = text(NaN, NaN, '|', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'black');
+end
 
-% Right subplot - FSIs
-subplot(1,2,2);
-hold on;
-h3 = histogram(fsi_summary.hfr_ppc_diff(dif_hfr_fsi), bin_edges, 'FaceColor', c2, 'FaceAlpha', 0.25, 'EdgeColor', c2);
-h4 = histogram(fsi_summary.lfr_ppc_diff(dif_lfr_fsi), bin_edges, 'FaceColor', c1, 'FaceAlpha', 0.25, 'EdgeColor', c1);
-xlabel('Frequency (Hz)');
-ylabel('Count');
-title('FSI PPC Diff Frequencies');
-legend({sprintf('HFR: n=%d', sum(dif_hfr_fsi)), sprintf('LFR: n=%d', sum(dif_lfr_fsi))}, 'Location', 'best');
-% grid on;
+if sum(only_lfr_diff_msn) > 0 || sum(only_lfr_diff_fsi) > 0
+    legend_entries{end+1} = '_ = LFR PPC diff only';
+    legend_handles(end+1) = text(NaN, NaN, '_', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'black');
+end
 
-%% New summary viz 3 (no thresholding)
-% Define colors (same scheme as before)
-c1 = [75/255 0/255 146/255];  % Violet/Purple for LFR
-c2 = [26/255 255/255 26/255]; % Green for HFR
-c3 = [0.7 0.7 0.7]; % Gray
-c4 = [0.8500 0.3250 0.0980]; % Orange
+if sum(both_diff_msn) > 0 || sum(both_diff_fsi) > 0
+    legend_entries{end+1} = '|_ = Both PPC diffs';
+    legend_handles(end+1) = text(NaN, NaN, '|_', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'black');
+end
 
-% Calculate the contrast index and mean frequency for MSNs
-msn_hfr_mag = msn_summary.hfr_sts_overall_peak_mag;
-msn_lfr_mag = msn_summary.lfr_sts_overall_peak_mag;
-msn_hfr_freq = msn_summary.hfr_sts_overall_peak;
-msn_lfr_freq = msn_summary.lfr_sts_overall_peak;
+if ~isempty(legend_entries)
+    legend(legend_handles, legend_entries, 'Location', 'best', 'FontSize', 14);
+end
 
-% Contrast index: (HFR - LFR) / (HFR + LFR)
-msn_contrast = (msn_hfr_mag - msn_lfr_mag) ./ (msn_hfr_mag + msn_lfr_mag);
-% Mean frequency
-msn_mean_freq = (msn_hfr_freq + msn_lfr_freq) / 2;
-msn_mean_freq = (msn_hfr_freq - msn_lfr_freq);
-
-% Calculate the contrast index and mean frequency for FSIs
-fsi_hfr_mag = fsi_summary.hfr_sts_overall_peak_mag;
-fsi_lfr_mag = fsi_summary.lfr_sts_overall_peak_mag;
-fsi_hfr_freq = fsi_summary.hfr_sts_overall_peak;
-fsi_lfr_freq = fsi_summary.lfr_sts_overall_peak;
-
-% Contrast index: (HFR - LFR) / (HFR + LFR)
-fsi_contrast = (fsi_hfr_mag - fsi_lfr_mag) ./ (fsi_hfr_mag + fsi_lfr_mag);
-% Mean frequency
-fsi_mean_freq = (fsi_hfr_freq + fsi_lfr_freq) / 2;
-fsi_mean_freq = (fsi_hfr_freq - fsi_lfr_freq);
-
-% Remove NaN values for plotting
-msn_valid = ~isnan(msn_contrast) & ~isnan(msn_mean_freq);
-fsi_valid = ~isnan(fsi_contrast) & ~isnan(fsi_mean_freq);
-
-% Create figure
-fig = figure('WindowState', 'maximized');
-
-% Left subplot - MSNs
-subplot(1,2,1);
-scatter(msn_mean_freq(msn_valid),msn_contrast(msn_valid), 100, c4, 'filled', 'MarkerFaceAlpha', 0.6);
-ylabel('STS Magnitude Contrast ((HFR-LFR)/(HFR+LFR))');
-xlabel('Peak Frequency Diff (Hz)');
-title(sprintf('MSN STS Peak Analysis (n=%d)', sum(msn_valid)));
-ylim([-1 1]);
-xlim([-100,100]);
-
-% Right subplot - FSIs
-subplot(1,2,2);
-scatter(fsi_mean_freq(fsi_valid), fsi_contrast(fsi_valid), 100, 'blue', 'filled', 'MarkerFaceAlpha', 0.6);
-ylabel('STS Magnitude Contrast ((HFR-LFR)/(HFR+LFR))');
-xlabel('Peak Frequency Diff (Hz)');
-title(sprintf('FSI STS Peak Analysis (n=%d)', sum(fsi_valid)));
-ylim([-1 1]);
-xlim([-100,100]);
-%% New summary thresholding viz 4 (With thresholding)
-
-% Define colors (same scheme as before)
-c1 = [75/255 0/255 146/255];  % Violet/Purple for LFR
-c2 = [26/255 255/255 26/255]; % Green for HFR
-c3 = [0.7 0.7 0.7]; % Gray
-c4 = [0.8500 0.3250 0.0980]; % Orange
-
-% Calculate the contrast index and mean frequency for MSNs (thresholded peaks)
-msn_hfr_mag = msn_summary.hfr_sts_peak_mag;
-msn_lfr_mag = msn_summary.lfr_sts_peak_mag;
-msn_hfr_freq = msn_summary.hfr_sts_peak;
-msn_lfr_freq = msn_summary.lfr_sts_peak;
-
-% Contrast index: (HFR - LFR) / (HFR + LFR)
-msn_contrast = (msn_hfr_mag - msn_lfr_mag) ./ (msn_hfr_mag + msn_lfr_mag);
-% Mean frequency
-msn_mean_freq = (msn_hfr_freq + msn_lfr_freq) / 2;
-msn_mean_freq = (msn_hfr_freq + msn_lfr_freq);
-
-% Calculate the contrast index and mean frequency for FSIs (thresholded peaks)
-fsi_hfr_mag = fsi_summary.hfr_sts_peak_mag;
-fsi_lfr_mag = fsi_summary.lfr_sts_peak_mag;
-fsi_hfr_freq = fsi_summary.hfr_sts_peak;
-fsi_lfr_freq = fsi_summary.lfr_sts_peak;
-
-% Contrast index: (HFR - LFR) / (HFR + LFR)
-fsi_contrast = (fsi_hfr_mag - fsi_lfr_mag) ./ (fsi_hfr_mag + fsi_lfr_mag);
-% Mean frequency
-fsi_mean_freq = (fsi_hfr_freq + fsi_lfr_freq) / 2;
-fsi_mean_freq = (fsi_hfr_freq - fsi_lfr_freq);
-
-% Only include cases where BOTH HFR and LFR thresholded peaks exist
-msn_valid = ~isnan(msn_hfr_mag) & ~isnan(msn_lfr_mag) & ~isnan(msn_hfr_freq) & ~isnan(msn_lfr_freq);
-fsi_valid = ~isnan(fsi_hfr_mag) & ~isnan(fsi_lfr_mag) & ~isnan(fsi_hfr_freq) & ~isnan(fsi_lfr_freq);
-
-% Create figure
-fig = figure('WindowState', 'maximized');
-
-% Left subplot - MSNs
-subplot(1,2,1);
-scatter(msn_mean_freq(msn_valid), msn_contrast(msn_valid), 100, c4, 'filled', 'MarkerFaceAlpha', 0.6);
-xlabel('Peak Frequency Diff (Hz)');
-ylabel('STS Magnitude Contrast ((HFR-LFR)/(HFR+LFR))');
-title(sprintf('MSN STS Thresholded Peak Analysis (n=%d)', sum(msn_valid)));
-ylim([-1 1]);
-xlim([-100,100]);
-
-% Right subplot - FSIs
-subplot(1,2,2);
-scatter(fsi_mean_freq(fsi_valid), fsi_contrast(fsi_valid), 100, 'blue', 'filled', 'MarkerFaceAlpha', 0.6);
-xlabel('Peak Frequency Diff (Hz)');
-ylabel('STS Magnitude Contrast ((HFR-LFR)/(HFR+LFR))');
-title(sprintf('FSI STS Thresholded Peak Analysis (n=%d)', sum(fsi_valid)));
-ylim([-1 1]);
-xlim([-100,100]);
 %% Other functions
 % Modular function to process each cell type
-function [summary_table, clean_count] = process_cell_type(cell_res, cell_labels, cell_type, colors, params, headers)
+function [summary_table, clean_count] = process_cell_type(cell_res, cell_labels, cell_type, colors, params, headers, artifact_cell_list)
     % Extract colors
     c1 = colors.c1; c2 = colors.c2; c3 = colors.c3; c4 = colors.c4;
     
@@ -413,10 +218,16 @@ function [summary_table, clean_count] = process_cell_type(cell_res, cell_labels,
     odir = params.odir;
     
     % Initialize results
-    summary_results = cell(0, 23);  % Pre-allocate with correct number of columns
+    summary_results = cell(0, 19);  % Pre-allocate with correct number of columns (removed overall peaks)
     clean_count = 0;
     
     for iC = 1:length(cell_labels)
+        % Check if cell should be rejected due to artifacts
+        cell_label = cell_labels{iC};
+        if any(contains(artifact_cell_list, cell_label))
+            continue; % Skip this cell
+        end
+        
         if isfield(cell_res.near_spec{iC}, 'flag_no_control_split') && ~cell_res.near_spec{iC}.flag_no_control_split
             clean_count = clean_count + 1;
             
@@ -433,7 +244,7 @@ function [summary_table, clean_count] = process_cell_type(cell_res, cell_labels,
             plot_sta(cell_res, iC, c1, c2, c3);
             
             % Plot STS and find peaks
-            [sts_peaks, sts_peak_mags, sts_overall_peaks, sts_overall_peak_mags] = plot_sts_and_find_peaks(cell_res, iC, c1, c2, c3, x1, this_freqs, pl_thresh, cell_type);
+            [sts_peaks, sts_peak_mags] = plot_sts_and_find_peaks(cell_res, iC, c1, c2, c3, x1, this_freqs, pl_thresh, cell_type);
             
             % Plot STS diff with windowing
             [sts_diff_peaks] = plot_sts_diff_with_windowing(cell_res, iC, c1, c2, c3, x1, this_freqs, diff_thresh, peak_freq_tol_win, sts_peaks, cell_type);
@@ -454,24 +265,19 @@ function [summary_table, clean_count] = process_cell_type(cell_res, cell_labels,
             print(fig, '-dpng', '-r300', strcat(odir, cell_labels{iC}, '_', cell_type));
             close;
             
-            % Compile results row
+            % Compile results row (removed overall peaks)
             this_row = {cell_labels{iC}, firing_rate_stats.lfr_min, firing_rate_stats.lfr_max, ...
                 firing_rate_stats.lfr_mean, firing_rate_stats.hfr_min, firing_rate_stats.hfr_max, firing_rate_stats.hfr_mean, ...
                 sts_peaks.lfr, sts_diff_peaks.lfr, sts_peaks.hfr, sts_diff_peaks.hfr, ...
                 ppc_peaks.lfr, ppc_diff_peaks.lfr, ppc_peaks.hfr, ppc_diff_peaks.hfr, ...
-                sts_peak_mags.lfr, sts_peak_mags.hfr, ppc_peak_mags.lfr, ppc_peak_mags.hfr, ...
-                sts_overall_peaks.lfr, sts_overall_peaks.hfr, sts_overall_peak_mags.lfr, sts_overall_peak_mags.hfr};
+                sts_peak_mags.lfr, sts_peak_mags.hfr, ppc_peak_mags.lfr, ppc_peak_mags.hfr};
             
-            % Debug: Check row length
-            fprintf('Row %d length: %d\n', clean_count, length(this_row));
             summary_results(end+1, :) = this_row;
         end
     end
     
     % Convert to table
     if ~isempty(summary_results)
-        % Debug: Check dimensions
-        fprintf('Summary results size: %d x %d, Headers length: %d\n', size(summary_results,1), size(summary_results,2), length(headers));
         summary_table = cell2table(summary_results, 'VariableNames', headers);
     else
         summary_table = cell2table(cell(0,length(headers)), 'VariableNames', headers);
@@ -520,8 +326,8 @@ function plot_sta(cell_res, iC, c1, c2, c3)
         sprintf('All Trials: %d spikes',cell_res.near_spec{iC}.spk_count)}, 'Location','best');
 end
 
-% Helper function: Plot STS and find peaks
-function [peaks, peak_mags, overall_peaks, overall_peak_mags] = plot_sts_and_find_peaks(cell_res, iC, c1, c2, c3, x1, this_freqs, pl_thresh, cell_type)
+% Helper function: Plot STS and find peaks (removed overall peaks)
+function [peaks, peak_mags] = plot_sts_and_find_peaks(cell_res, iC, c1, c2, c3, x1, this_freqs, pl_thresh, cell_type)
     ax2 = subplot(2,3,2);
     hold on;
     
@@ -571,26 +377,6 @@ function [peaks, peak_mags, overall_peaks, overall_peak_mags] = plot_sts_and_fin
         % Add horizontal line from peak to y-axis (solid dash for threshold-crossing)
         yline(ax2, peak_mags.hfr, 'Color', c2, 'LineStyle', '--', 'Alpha', 0.7);
     end
-    
-    % Initialize overall peak outputs
-    overall_peaks.lfr = NaN; overall_peaks.hfr = NaN;
-    overall_peak_mags.lfr = NaN; overall_peak_mags.hfr = NaN;
-    
-    % Find LFR overall peak (maximum regardless of threshold)
-    [~, peak_idx] = max(lfr_sts(x1:end));
-    overall_peaks.lfr = this_freqs(peak_idx);
-    overall_peak_mags.lfr = lfr_sts(x1-1+peak_idx);
-    xline(ax2, overall_peaks.lfr, 'Color', c1, 'LineStyle', ':', 'LineWidth', 1.5);
-    % Add horizontal line with dotted style for overall peaks
-    yline(ax2, overall_peak_mags.lfr, 'Color', c1, 'LineStyle', ':', 'Alpha', 0.7, 'LineWidth', 1.5);
-    
-    % Find HFR overall peak (maximum regardless of threshold)
-    [~, peak_idx] = max(hfr_sts(x1:end));
-    overall_peaks.hfr = this_freqs(peak_idx);
-    overall_peak_mags.hfr = hfr_sts(x1-1+peak_idx);
-    xline(ax2, overall_peaks.hfr, 'Color', c2, 'LineStyle', ':', 'LineWidth', 1.5);
-    % Add horizontal line with dotted style for overall peaks
-    yline(ax2, overall_peak_mags.hfr, 'Color', c2, 'LineStyle', ':', 'Alpha', 0.7, 'LineWidth', 1.5);
     
     ax2.Box = 'off';
     ax2.YTick = [];
