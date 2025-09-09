@@ -29,7 +29,6 @@ end
 valid_cells = {};
 valid_cell_info = {};
 
-fprintf('Checking cell availability...\n');
 for cell_idx = 1:length(cell_names)
     current_cell = cell_names{cell_idx};
     
@@ -101,20 +100,13 @@ for cell_idx = 1:length(cell_names)
     end
 end
 
-fprintf('\nTotal cells requested: %d\n', length(cell_names));
-fprintf('Valid cells found: %d\n', length(valid_cells));
-
-if isempty(valid_cells)
-    error('No valid cells found. Cannot create plots.');
-end
-
 % Create figure with appropriate number of subplots
 n_cells = length(valid_cells);
 fig = figure('WindowState', 'maximized');
 
 % Store axes handles for easy access
-sta_axes = zeros(1, n_cells);
-ppc_axes = zeros(1, n_cells);
+sta_axes = cell(1, n_cells);
+ppc_axes = cell(1, n_cells);
 
 % Process each valid cell
 for cell_idx = 1:n_cells
@@ -123,7 +115,7 @@ for cell_idx = 1:n_cells
     
     % Plot STA
     ax1 = subplot(2, n_cells, cell_idx);
-    sta_axes(cell_idx) = ax1; % Store axis handle
+    sta_axes{cell_idx} = ax1; % Store axis handle
     hold on;
     
     % Get STA data
@@ -150,7 +142,7 @@ for cell_idx = 1:n_cells
     
     % Plot PPC
     ax2 = subplot(2, n_cells, n_cells + cell_idx);
-    ppc_axes(cell_idx) = ax2; % Store axis handle
+    ppc_axes{cell_idx} = ax2; % Store axis handle
     hold on;
     
     % Get PPC data based on cell type
@@ -211,11 +203,15 @@ end
 % 
 % % Set PPC Y-limits (bottom row)
 % for i = 1:n_cells
-%     ppc_axes(i).YLim = [-0.02 0.05]; % Adjust these values
-%     ppc_axes(i).YTick = [0:0.01:0.05]; % Set Y-tick labels
+%     ppc_axes{i}.YLim = [-0.02 0.05]; % Adjust these values
+%     ppc_axes{i}.YTick = [0:0.01:0.05]; % Set Y-tick labels
 % end
+for i = 1:n_cells
+    sta_axes{i}.YTick = []; % Adjust these values
+end
 
-% Save figure
+
+%% Save figure
 save_filename = 'example_cells_combined.png';
 print(fig, '-dpng', '-r300', fullfile(output_dir, save_filename));
 

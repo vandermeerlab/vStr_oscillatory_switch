@@ -31,7 +31,7 @@ dif_lfr_fsi = ~isnan(fsi_summary.lfr_ppc_diff);
 % Create figure
 fig = figure('WindowState', 'maximized');
 
-%% Top Left: Main Summary Plot (All eligible cells with symbols)
+% Top Left: Main Summary Plot (All eligible cells with symbols)
 ax1 = subplot(2,2,1);
 hold on;
 
@@ -143,7 +143,7 @@ if ~isempty(legend_entries)
     legend(legend_handles, legend_entries, 'Location', 'best', 'FontSize', 12);
 end
 
-%% Top Right: Only HFR significant PPC diff
+% Top Right: Only HFR significant PPC diff
 ax2 = subplot(2,2,2);
 hold on;
 
@@ -185,7 +185,7 @@ if sum(only_hfr_diff_msn) > 0 || sum(only_hfr_diff_fsi) > 0
     legend(legend_handles_hfr, legend_entries_hfr, 'Location', 'best', 'FontSize', 12);
 end
 
-%% Bottom Left: Only LFR significant PPC diff
+% Bottom Left: Only LFR significant PPC diff
 ax3 = subplot(2,2,3);
 hold on;
 
@@ -227,7 +227,7 @@ if sum(only_lfr_diff_msn) > 0 || sum(only_lfr_diff_fsi) > 0
     legend(legend_handles_lfr, legend_entries_lfr, 'Location', 'best', 'FontSize', 12);
 end
 
-%% Bottom Right: Both significant PPC diffs
+% Bottom Right: Both significant PPC diffs
 ax4 = subplot(2,2,4);
 hold on;
 
@@ -271,6 +271,171 @@ end
 
 % Adjust subplot spacing
 % sgtitle('Main Summary: Delta Firing Rate vs Delta Peak Frequency', 'FontSize', 18, 'FontWeight', 'bold');
+
+%% Create second figure with histogram distributions
+fig2 = figure('WindowState', 'maximized');
+
+hist_bins = -105:10:105;
+% Top Left: All Eligible Cells - Delta Frequency Distribution
+ax5 = subplot(2,2,1);
+hold on;
+
+% Calculate delta frequencies for all eligible cells
+all_msn_delta_freq = msn_summary.hfr_ppc_peak(clean_msn) - msn_summary.lfr_ppc_peak(clean_msn);
+all_fsi_delta_freq = fsi_summary.hfr_ppc_peak(clean_fsi) - fsi_summary.lfr_ppc_peak(clean_fsi);
+
+% Create histograms with transparency
+if ~isempty(all_msn_delta_freq)
+    histogram(ax5, all_msn_delta_freq, hist_bins, 'FaceColor', c4, 'FaceAlpha', 0.6, 'EdgeColor', 'none', 'Normalization', 'probability');
+end
+if ~isempty(all_fsi_delta_freq)
+    histogram(ax5, all_fsi_delta_freq, hist_bins, 'FaceColor', 'blue', 'FaceAlpha', 0.6, 'EdgeColor', 'none', 'Normalization', 'probability');
+end
+
+% Add vertical lines for means
+if ~isempty(all_msn_delta_freq)
+    msn_mean_delta_freq = mean(all_msn_delta_freq);
+    xline(ax5, msn_mean_delta_freq, 'Color', c4, 'LineWidth', 2, 'LineStyle', '--');
+end
+if ~isempty(all_fsi_delta_freq)
+    fsi_mean_delta_freq = mean(all_fsi_delta_freq);
+    xline(ax5, fsi_mean_delta_freq, 'Color', 'blue', 'LineWidth', 2, 'LineStyle', '--');
+end
+
+ax5.XLabel.String = '\Delta Peak Frequency (Hz)';
+ax5.YLabel.String = 'Proportion';
+ax5.FontSize = 16;
+ax5.Title.String = 'All Eligible Cells';
+ax5.XLim = [-100 100];
+
+% Legend
+legend_handles_hist1 = [];
+legend_entries_hist1 = {};
+if ~isempty(all_msn_delta_freq)
+    legend_entries_hist1{end+1} = sprintf('MSN (n=%d)', length(all_msn_delta_freq));
+    legend_handles_hist1(end+1) = patch(NaN, NaN, c4, 'FaceAlpha', 0.6, 'EdgeColor', 'none');
+end
+if ~isempty(all_fsi_delta_freq)
+    legend_entries_hist1{end+1} = sprintf('FSI (n=%d)', length(all_fsi_delta_freq));
+    legend_handles_hist1(end+1) = patch(NaN, NaN, 'blue', 'FaceAlpha', 0.6, 'EdgeColor', 'none');
+end
+if ~isempty(legend_entries_hist1)
+    legend(legend_handles_hist1, legend_entries_hist1, 'Location', 'best', 'FontSize', 12);
+end
+
+% Top Right: Only HFR significant PPC diff - Delta Frequency Distribution
+ax6 = subplot(2,2,2);
+hold on;
+
+% Calculate delta frequencies for HFR-only cells
+if sum(only_hfr_diff_msn) > 0
+    msn_hfr_only_delta_freq = msn_summary.hfr_ppc_peak(only_hfr_diff_msn) - msn_summary.lfr_ppc_peak(only_hfr_diff_msn);
+    histogram(ax6, msn_hfr_only_delta_freq, hist_bins, 'FaceColor', c4, 'FaceAlpha', 0.6, 'EdgeColor', 'none', 'Normalization', 'probability');
+    xline(ax6, mean(msn_hfr_only_delta_freq), 'Color', c4, 'LineWidth', 2, 'LineStyle', '--');
+end
+
+if sum(only_hfr_diff_fsi) > 0
+    fsi_hfr_only_delta_freq = fsi_summary.hfr_ppc_peak(only_hfr_diff_fsi) - fsi_summary.lfr_ppc_peak(only_hfr_diff_fsi);
+    histogram(ax6, fsi_hfr_only_delta_freq, hist_bins, 'FaceColor', 'blue', 'FaceAlpha', 0.6, 'EdgeColor', 'none', 'Normalization', 'probability');
+    xline(ax6, mean(fsi_hfr_only_delta_freq), 'Color', 'blue', 'LineWidth', 2, 'LineStyle', '--');
+end
+
+ax6.XLabel.String = '\Delta Peak Frequency (Hz)';
+ax6.YLabel.String = 'Proportion';
+ax6.FontSize = 16;
+ax6.Title.String = sprintf('HFR PPC Diff Only (MSN:%d, FSI:%d)', only_hfr_diff_msn_count, only_hfr_diff_fsi_count);
+ax6.XLim = [-100 100];
+
+% Legend
+legend_handles_hist2 = [];
+legend_entries_hist2 = {};
+if sum(only_hfr_diff_msn) > 0
+    legend_entries_hist2{end+1} = sprintf('MSN (n=%d)', only_hfr_diff_msn_count);
+    legend_handles_hist2(end+1) = patch(NaN, NaN, c4, 'FaceAlpha', 0.6, 'EdgeColor', 'none');
+end
+if sum(only_hfr_diff_fsi) > 0
+    legend_entries_hist2{end+1} = sprintf('FSI (n=%d)', only_hfr_diff_fsi_count);
+    legend_handles_hist2(end+1) = patch(NaN, NaN, 'blue', 'FaceAlpha', 0.6, 'EdgeColor', 'none');
+end
+if ~isempty(legend_entries_hist2)
+    legend(legend_handles_hist2, legend_entries_hist2, 'Location', 'best', 'FontSize', 12);
+end
+
+% Bottom Left: Only LFR significant PPC diff - Delta Frequency Distribution
+ax7 = subplot(2,2,3);
+hold on;
+
+% Calculate delta frequencies for LFR-only cells
+if sum(only_lfr_diff_msn) > 0
+    msn_lfr_only_delta_freq = msn_summary.hfr_ppc_peak(only_lfr_diff_msn) - msn_summary.lfr_ppc_peak(only_lfr_diff_msn);
+    histogram(ax7, msn_lfr_only_delta_freq, hist_bins, 'FaceColor', c4, 'FaceAlpha', 0.6, 'EdgeColor', 'none', 'Normalization', 'probability');
+    xline(ax7, mean(msn_lfr_only_delta_freq), 'Color', c4, 'LineWidth', 2, 'LineStyle', '--');
+end
+
+if sum(only_lfr_diff_fsi) > 0
+    fsi_lfr_only_delta_freq = fsi_summary.hfr_ppc_peak(only_lfr_diff_fsi) - fsi_summary.lfr_ppc_peak(only_lfr_diff_fsi);
+    histogram(ax7, fsi_lfr_only_delta_freq, hist_bins, 'FaceColor', 'blue', 'FaceAlpha', 0.6, 'EdgeColor', 'none', 'Normalization', 'probability');
+    xline(ax7, mean(fsi_lfr_only_delta_freq), 'Color', 'blue', 'LineWidth', 2, 'LineStyle', '--');
+end
+
+ax7.XLabel.String = '\Delta Peak Frequency (Hz)';
+ax7.YLabel.String = 'Proportion';
+ax7.FontSize = 16;
+ax7.Title.String = sprintf('LFR PPC Diff Only (MSN:%d, FSI:%d)', only_lfr_diff_msn_count, only_lfr_diff_fsi_count);
+ax7.XLim = [-100 100];
+
+% Legend
+legend_handles_hist3 = [];
+legend_entries_hist3 = {};
+if sum(only_lfr_diff_msn) > 0
+    legend_entries_hist3{end+1} = sprintf('MSN (n=%d)', only_lfr_diff_msn_count);
+    legend_handles_hist3(end+1) = patch(NaN, NaN, c4, 'FaceAlpha', 0.6, 'EdgeColor', 'none');
+end
+if sum(only_lfr_diff_fsi) > 0
+    legend_entries_hist3{end+1} = sprintf('FSI (n=%d)', only_lfr_diff_fsi_count);
+    legend_handles_hist3(end+1) = patch(NaN, NaN, 'blue', 'FaceAlpha', 0.6, 'EdgeColor', 'none');
+end
+if ~isempty(legend_entries_hist3)
+    legend(legend_handles_hist3, legend_entries_hist3, 'Location', 'best', 'FontSize', 12);
+end
+
+% Bottom Right: Both significant PPC diffs - Delta Frequency Distribution
+ax8 = subplot(2,2,4);
+hold on;
+
+% Calculate delta frequencies for both-diff cells
+if sum(both_diff_msn) > 0
+    msn_both_delta_freq = msn_summary.hfr_ppc_peak(both_diff_msn) - msn_summary.lfr_ppc_peak(both_diff_msn);
+    histogram(ax8, msn_both_delta_freq, hist_bins, 'FaceColor', c4, 'FaceAlpha', 0.6, 'EdgeColor', 'none', 'Normalization', 'probability');
+    xline(ax8, mean(msn_both_delta_freq), 'Color', c4, 'LineWidth', 2, 'LineStyle', '--');
+end
+
+if sum(both_diff_fsi) > 0
+    fsi_both_delta_freq = fsi_summary.hfr_ppc_peak(both_diff_fsi) - fsi_summary.lfr_ppc_peak(both_diff_fsi);
+    histogram(ax8, fsi_both_delta_freq, hist_bins, 'FaceColor', 'blue', 'FaceAlpha', 0.6, 'EdgeColor', 'none', 'Normalization', 'probability');
+    xline(ax8, mean(fsi_both_delta_freq), 'Color', 'blue', 'LineWidth', 2, 'LineStyle', '--');
+end
+
+ax8.XLabel.String = '\Delta Peak Frequency (Hz)';
+ax8.YLabel.String = 'Proportion';
+ax8.FontSize = 16;
+ax8.Title.String = sprintf('Both PPC Diffs (MSN:%d, FSI:%d)', both_diff_msn_count, both_diff_fsi_count);
+ax8.XLim = [-100 100];
+
+% Legend
+legend_handles_hist4 = [];
+legend_entries_hist4 = {};
+if sum(both_diff_msn) > 0
+    legend_entries_hist4{end+1} = sprintf('MSN (n=%d)', both_diff_msn_count);
+    legend_handles_hist4(end+1) = patch(NaN, NaN, c4, 'FaceAlpha', 0.6, 'EdgeColor', 'none');
+end
+if sum(both_diff_fsi) > 0
+    legend_entries_hist4{end+1} = sprintf('FSI (n=%d)', both_diff_fsi_count);
+    legend_handles_hist4(end+1) = patch(NaN, NaN, 'blue', 'FaceAlpha', 0.6, 'EdgeColor', 'none');
+end
+if ~isempty(legend_entries_hist4)
+    legend(legend_handles_hist4, legend_entries_hist4, 'Location', 'best', 'FontSize', 12);
+end
 
 % Print summary statistics
 fprintf('\n=== SUMMARY STATISTICS ===\n');
