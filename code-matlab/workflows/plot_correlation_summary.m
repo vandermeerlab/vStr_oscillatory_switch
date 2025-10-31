@@ -90,6 +90,8 @@ fsi_color = [0 0.4470 0.7410]; % Blue
 
 %% ===== FIGURE 1: DIAGNOSTIC PLOTS ===== 
 fig = figure('WindowState', 'maximized');
+fig.Renderer = 'painters';
+fontname(fig, 'Helvetica');
 
 % Row 1, Col 1: Box plot of mean PPC correlation
 subplot(2,3,1);
@@ -133,7 +135,7 @@ msn_x = 0.8 + 0.4 * (rand(length(msn_ppc_control_std), 1) - 0.5);
 fsi_x = 1.8 + 0.4 * (rand(length(fsi_ppc_control_std), 1) - 0.5);
 scatter(msn_x, msn_ppc_control_std, 30, msn_color, 'MarkerFaceAlpha', 0.6);
 scatter(fsi_x, fsi_ppc_control_std, 30, fsi_color, 'MarkerFaceAlpha', 0.6);
-ylabel('PPC Control Split Std');
+ylabel('PPC Control Split SD');
 title('PPC Control Split Variability');
 % Add p-value text
 text(0.05, 0.95, sprintf('p = %.4f', ks_p_ppc_control_std), 'Units', 'normalized', ...
@@ -184,8 +186,9 @@ title('PPC Control Split Mean');
 
 %% ===== FIGURE 2: COMBINED LAYOUT =====
 
-
 fig3 = figure('WindowState', 'maximized');
+fig3.Renderer = 'painters';
+fontname(fig3, 'Helvetica');
 
 % Top row: First, third, and sixth subplots from the first figure
 % Row 1, Col 1: Box plot of mean PPC correlation (from subplot 2,3,1)
@@ -215,7 +218,7 @@ msn_x = 0.8 + 0.4 * (rand(length(msn_ppc_control_std), 1) - 0.5);
 fsi_x = 1.8 + 0.4 * (rand(length(fsi_ppc_control_std), 1) - 0.5);
 scatter(msn_x, msn_ppc_control_std, 30, msn_color, 'MarkerFaceAlpha', 0.6);
 scatter(fsi_x, fsi_ppc_control_std, 30, fsi_color, 'MarkerFaceAlpha', 0.6);
-ylabel('PPC Control Split Std');
+ylabel('PPC Control Split SD');
 title('PPC Control Split Variability');
 % Add p-value text
 text(0.05, 0.95, sprintf('p = %.4f', ks_p_ppc_control_std), 'Units', 'normalized', ...
@@ -302,8 +305,8 @@ fprintf('MSN: Mean = %.3f ± %.3f, Median = %.3f\n', mean(msn_ppc_corr), std(msn
 fprintf('FSI: Mean = %.3f ± %.3f, Median = %.3f\n', mean(fsi_ppc_corr), std(fsi_ppc_corr), median(fsi_ppc_corr));
 fprintf('MSN PPC Percentile: Mean = %.1f ± %.1f\n', mean(msn_ppc_percentiles), std(msn_ppc_percentiles));
 fprintf('FSI PPC Percentile: Mean = %.1f ± %.1f\n', mean(fsi_ppc_percentiles), std(fsi_ppc_percentiles));
-fprintf('MSN PPC Control Std: Mean = %.3f ± %.3f\n', mean(msn_ppc_control_std), std(msn_ppc_control_std));
-fprintf('FSI PPC Control Std: Mean = %.3f ± %.3f\n', mean(fsi_ppc_control_std), std(fsi_ppc_control_std));
+fprintf('MSN PPC Control SD: Mean = %.3f ± %.3f\n', mean(msn_ppc_control_std), std(msn_ppc_control_std));
+fprintf('FSI PPC Control SD: Mean = %.3f ± %.3f\n', mean(fsi_ppc_control_std), std(fsi_ppc_control_std));
 fprintf('MSN PPC Control Mean: Mean = %.3f ± %.3f\n', mean(msn_ppc_control_mean), std(msn_ppc_control_mean));
 fprintf('FSI PPC Control Mean: Mean = %.3f ± %.3f\n', mean(fsi_ppc_control_mean), std(fsi_ppc_control_mean));
 
@@ -315,7 +318,7 @@ fprintf('FSI STS Percentile: Mean = %.1f ± %.1f\n', mean(fsi_sts_percentiles), 
 
 fprintf('\n=== KS Test Results ===\n');
 fprintf('PPC Correlation (FSI < MSN): p = %.4f\n', ks_p_ppc_corr);
-fprintf('PPC Control Std (FSI > MSN): p = %.4f\n', ks_p_ppc_control_std);
+fprintf('PPC Control SD (FSI > MSN): p = %.4f\n', ks_p_ppc_control_std);
 fprintf('PPC Control Mean KS Test (FSI < MSN): p = %.4f\n', ks_p_ppc_control_mean);
 
 fprintf('\n=== Sign Test Results (HFR-LFR vs Control Mean) ===\n');
@@ -324,12 +327,14 @@ fprintf('FSI: %d/%d cells have HFR-LFR correlation ≥ control mean (p = %.4f)\n
 
 %% ===== FIGURE 3: BOX PLOTS WITH JITTERED DATA =====
 % Parameters for third figure
-marker_size = 150; % Exposed parameter for marker size
-marker_alpha = 0.4;
+marker_size = 250; % Exposed parameter for marker size
+marker_alpha = 0.2;
 box_plot_width = 0.75;
 
 % Create third figure
 fig4 = figure('WindowState', 'maximized');
+fig4.Renderer = 'painters';
+fontname(fig4, 'Helvetica');
 
 subplot(2,3,[1,4]);
 hold on;
@@ -344,6 +349,10 @@ jitter_fsi = 2 + 0.6 * (rand(length(fsi_ppc_corr), 1) - 0.5);
 scatter(jitter_msn, msn_ppc_corr, 'SizeData', marker_size, 'MarkerFaceColor', msn_color, 'MarkerFaceAlpha', marker_alpha, 'MarkerEdgeAlpha', 0);
 scatter(jitter_fsi, fsi_ppc_corr, 'SizeData', marker_size, 'MarkerFaceColor', fsi_color, 'MarkerFaceAlpha', marker_alpha, 'MarkerEdgeAlpha', 0);
 
+% Line to mark means and draw lines
+scatter(1, mean(msn_ppc_corr), 'SizeData', 3*marker_size, 'MarkerEdgeColor', msn_color, 'MarkerEdgeAlpha', 2*marker_alpha, 'MarkerFaceAlpha', 0);
+scatter(2, mean(fsi_ppc_corr), 'SizeData', 3*marker_size, 'MarkerEdgeColor', fsi_color, 'MarkerEdgeAlpha', 2*marker_alpha, 'MarkerFaceAlpha', 0);
+plot([1, 2], [mean(msn_ppc_corr), mean(fsi_ppc_corr)], 'Color', 'black', 'LineWidth', 3, 'LineStyle', '--');
 ylabel('PPC Correlation');
 
 % Add hypothesis testing lines
@@ -360,7 +369,7 @@ ax.TickDir = 'out';
 box off;
 
 pause(3);
-subplot(2,3,2);
+subplot(2,3,3);
 hold on;
 
 % Create box plot
@@ -373,7 +382,11 @@ jitter_fsi = 2 + 0.6 * (rand(length(fsi_ppc_control_mean), 1) - 0.5);
 scatter(jitter_msn, msn_ppc_control_mean, 'SizeData', marker_size, 'MarkerFaceColor', msn_color, 'MarkerFaceAlpha', marker_alpha, 'MarkerEdgeAlpha', 0);
 scatter(jitter_fsi, fsi_ppc_control_mean, 'SizeData', marker_size, 'MarkerFaceColor', fsi_color, 'MarkerFaceAlpha', marker_alpha, 'MarkerEdgeAlpha', 0);
 
-ylabel('PPC Control Split Mean');
+% Line to mark means and draw lines
+scatter(1, mean(msn_ppc_control_mean), 'SizeData', 3*marker_size, 'MarkerEdgeColor', msn_color, 'MarkerEdgeAlpha', 2*marker_alpha, 'MarkerFaceAlpha', 0);
+scatter(2, mean(fsi_ppc_control_mean), 'SizeData', 3*marker_size, 'MarkerEdgeColor', fsi_color, 'MarkerEdgeAlpha', 2*marker_alpha, 'MarkerFaceAlpha', 0);
+plot([1, 2], [mean(msn_ppc_control_mean), mean(fsi_ppc_control_mean)], 'Color', 'black', 'LineWidth', 3, 'LineStyle', '--');
+ylabel('PPC Control-split Correlation Mean');
 
 % Add hypothesis testing lines
 y_pos = 1.1;
@@ -389,7 +402,7 @@ ax.TickDir = 'out';
 box off;
 
 pause(3);
-subplot(2,3,5);
+subplot(2,3,6);
 hold on;
 
 % Create box plot
@@ -402,7 +415,12 @@ jitter_fsi = 2 + 0.6 * (rand(length(fsi_ppc_control_std), 1) - 0.5);
 scatter(jitter_msn, msn_ppc_control_std, 'SizeData', marker_size, 'MarkerFaceColor', msn_color, 'MarkerFaceAlpha', marker_alpha, 'MarkerEdgeAlpha', 0);
 scatter(jitter_fsi, fsi_ppc_control_std, 'SizeData', marker_size, 'MarkerFaceColor', fsi_color, 'MarkerFaceAlpha', marker_alpha, 'MarkerEdgeAlpha', 0);
 
-ylabel('PPC Control Split Std');
+% Line to mark means and draw lines
+scatter(1, mean(msn_ppc_control_std), 'SizeData', 3*marker_size, 'MarkerEdgeColor', msn_color, 'MarkerEdgeAlpha', 2*marker_alpha, 'MarkerFaceAlpha', 0);
+scatter(2, mean(fsi_ppc_control_std), 'SizeData', 3*marker_size, 'MarkerEdgeColor', fsi_color, 'MarkerEdgeAlpha', 2*marker_alpha, 'MarkerFaceAlpha', 0);
+plot([1, 2], [mean(msn_ppc_control_std), mean(fsi_ppc_control_std)], 'Color', 'black', 'LineWidth', 3, 'LineStyle', '--');
+
+ylabel('PPC Control-split Correlation SD');
 
 % Add hypothesis testing lines
 y_pos = 0.35;
@@ -418,7 +436,7 @@ ax.TickDir = 'out';
 box off;
 
 pause(3);
-subplot(2,3,[3,6]);
+subplot(2,3,[2,5]);
 hold on
 
 % Plot MSN data
@@ -441,7 +459,12 @@ for i = 1:length(fsi_ppc_corr)
     scatter(4, fsi_ppc_control_mean(i), 'SizeData', marker_size, 'MarkerFaceColor',  fsi_color, 'MarkerFaceAlpha', marker_alpha, 'MarkerEdgeAlpha', 0);
 end
 
-% Add mean lines
+% Add mean lines and circles
+scatter(1, mean(msn_ppc_corr), 'SizeData', 3*marker_size, 'MarkerEdgeColor', msn_color, 'MarkerEdgeAlpha', 2*marker_alpha, 'MarkerFaceAlpha', 0);
+scatter(2, mean(msn_ppc_control_mean), 'SizeData', 3*marker_size, 'MarkerEdgeColor', msn_color, 'MarkerEdgeAlpha', 2*marker_alpha, 'MarkerFaceAlpha', 0);
+scatter(3, mean(fsi_ppc_corr), 'SizeData', 3*marker_size, 'MarkerEdgeColor',  fsi_color, 'MarkerEdgeAlpha', 2*marker_alpha, 'MarkerFaceAlpha', 0);
+scatter(4, mean(fsi_ppc_control_mean), 'SizeData', 3*marker_size, 'MarkerEdgeColor',  fsi_color, 'MarkerEdgeAlpha', 2*marker_alpha, 'MarkerFaceAlpha', 0);
+
 plot([1, 2], [mean(msn_ppc_corr), mean(msn_ppc_control_mean)], 'Color', msn_color, 'LineWidth', 3, 'LineStyle', '--');
 plot([3, 4], [mean(fsi_ppc_corr), mean(fsi_ppc_control_mean)], 'Color', fsi_color, 'LineWidth', 3, 'LineStyle', '--');
 
@@ -475,3 +498,4 @@ legend(legend_handles, legend_entries, 'Location', 'best', 'FontSize', 12);
 ax = gca;
 ax.TickDir = 'out';
 box off;
+

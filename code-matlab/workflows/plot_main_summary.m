@@ -11,10 +11,9 @@ c3 = [0.7 0.7 0.7]; % Gray
 c4 = [0.8500 0.3250 0.0980]; % Orange
 
 % Plotting parameters (following same heuristics as plot_correlation_summary.m)
-circle_marker_size = 200;
+circle_marker_size = 400;
 symbol_marker_size = 30;
-marker_alpha = 0.4;
-box_plot_width = 0.75;
+marker_alpha = 0.1;
 
 % Define masks for cells with significant PPC peaks in both HFR and LFR
 only_hfr_msn = ~isnan(msn_summary.hfr_ppc_peak);
@@ -143,6 +142,8 @@ end
 
 % Create figure
 fig = figure('WindowState', 'maximized');
+fig.Renderer = 'painters';
+fontname(fig, 'Helvetica');
 
 % Left Column: Main Summary Plot (All eligible cells with symbols) - spans all rows
 ax1 = subplot(3,2,[1,3,5]);
@@ -158,44 +159,56 @@ s2 = scatter(ax1, fsi_delta_fr, fsi_delta_freq, 'SizeData', circle_marker_size, 
 % MSNs with only HFR significant PPC diff
 only_hfr_diff_msn_data = only_hfr_diff_msn(clean_msn);
 if sum(only_hfr_diff_msn_data) > 0
-    s3 = scatter(ax1, msn_delta_fr(only_hfr_diff_msn_data), msn_delta_freq(only_hfr_diff_msn_data), symbol_marker_size,'black', 'Marker', '>');
+    s3 = scatter(ax1, msn_delta_fr(only_hfr_diff_msn_data), msn_delta_freq(only_hfr_diff_msn_data), ...
+        'SizeData', circle_marker_size, 'MarkerEdgeColor', 'black', 'MarkerFaceAlpha', 0, 'MarkerEdgeAlpha', 1);
+    % s3 = scatter(ax1, msn_delta_fr(only_hfr_diff_msn_data), msn_delta_freq(only_hfr_diff_msn_data), symbol_marker_size,'black', 'Marker', '>');
 end
 
 % MSNs with only LFR significant PPC diff
 only_lfr_diff_msn_data = only_lfr_diff_msn(clean_msn);
 if sum(only_lfr_diff_msn_data) > 0
-    s4 = scatter(ax1, msn_delta_fr(only_lfr_diff_msn_data), msn_delta_freq(only_lfr_diff_msn_data), symbol_marker_size,'black', 'Marker', '<');
+    s4 = scatter(ax1, msn_delta_fr(only_lfr_diff_msn_data), msn_delta_freq(only_lfr_diff_msn_data), ...
+        'SizeData', 0.1*circle_marker_size, 'MarkerFaceColor', 'black', 'MarkerFaceAlpha', 0.5, 'MarkerEdgeAlpha', 0);
+    % s4 = scatter(ax1, msn_delta_fr(only_lfr_diff_msn_data), msn_delta_freq(only_lfr_diff_msn_data), symbol_marker_size,'black', 'Marker', '<');
 end
 
 % MSNs with both HFR and LFR significant PPC diff
 both_diff_msn_data = both_diff_msn(clean_msn);
-if sum(both_diff_msn_data) > 0
-    s5 = scatter(ax1, msn_delta_fr(both_diff_msn_data), msn_delta_freq(both_diff_msn_data), symbol_marker_size,'black', 'Marker', 'x');
-end
+% if sum(both_diff_msn_data) > 0
+%     s5 = scatter(ax1, msn_delta_fr(both_diff_msn_data), msn_delta_freq(both_diff_msn_data), symbol_marker_size,'black', 'Marker', 'x');
+% end
 
 % FSIs with only HFR significant PPC diff
 only_hfr_diff_fsi_data = only_hfr_diff_fsi(clean_fsi);
 if sum(only_hfr_diff_fsi_data) > 0
-    s6 = scatter(ax1, fsi_delta_fr(only_hfr_diff_fsi_data), fsi_delta_freq(only_hfr_diff_fsi_data), symbol_marker_size,'black', 'Marker', '>');
+    s6 = scatter(ax1, fsi_delta_fr(only_hfr_diff_fsi_data), fsi_delta_freq(only_hfr_diff_fsi_data), ...
+        'SizeData', circle_marker_size, 'MarkerEdgeColor', 'black', 'MarkerFaceAlpha', 0, 'MarkerEdgeAlpha', 1);
+    % s6 = scatter(ax1, fsi_delta_fr(only_hfr_diff_fsi_data), fsi_delta_freq(only_hfr_diff_fsi_data), symbol_marker_size,'black', 'Marker', '>');
 end
 
 % FSIs with only LFR significant PPC diff
 only_lfr_diff_fsi_data = only_lfr_diff_fsi(clean_fsi);
 if sum(only_lfr_diff_fsi_data) > 0
-    s7 = scatter(ax1, fsi_delta_fr(only_lfr_diff_fsi_data), fsi_delta_freq(only_lfr_diff_fsi_data), symbol_marker_size,'black', 'Marker', '<');
+    s7 = scatter(ax1, fsi_delta_fr(only_lfr_diff_fsi_data), fsi_delta_freq(only_lfr_diff_fsi_data), ...
+         'SizeData', 0.1*circle_marker_size, 'MarkerFaceColor', 'black', 'MarkerFaceAlpha', 0.5, 'MarkerEdgeAlpha', 0);
+    % s7 = scatter(ax1, fsi_delta_fr(only_lfr_diff_fsi_data), fsi_delta_freq(only_lfr_diff_fsi_data), symbol_marker_size,'black', 'Marker', '<');
 end
 
 % FSIs with both HFR and LFR significant PPC diff
 both_diff_fsi_data = both_diff_fsi(clean_fsi);
-if sum(both_diff_fsi_data) > 0
-    s8 = scatter(ax1, fsi_delta_fr(both_diff_fsi_data), fsi_delta_freq(both_diff_fsi_data), symbol_marker_size,'black', 'Marker', 'x');
-end
+% if sum(both_diff_fsi_data) > 0
+%     s8 = scatter(ax1, fsi_delta_fr(both_diff_fsi_data), fsi_delta_freq(both_diff_fsi_data), symbol_marker_size,'black', 'Marker', 'x');
+% end
 
-ax1.XLabel.String = '\Delta Firing Rate';
-ax1.YLabel.String = '\Delta Peak Frequency (Hz)';
+ax1.XLabel.String = 'Delta Firing Rate';
+ax1.YLabel.String = 'Delta Peak Frequency (Hz)';
 ax1.FontSize = 16;
+ax1.XAxis.FontSize = 24;
+ax1.YAxis.FontSize = 24;
 ax1.Title.String = 'All Eligible Cells';
 ax1.YLim = [-100 100];
+ax1.Box = 'off';
+ax1.TickDir = 'out';
 
 % Create legend for main plot
 legend_entries = {};
@@ -253,7 +266,7 @@ end
 if ~isempty(legend_entries)
     legend(legend_handles, legend_entries, 'Location', 'best', 'FontSize', 12);
 end
-
+ax1.Legend.FontSize = 21;
 % Right Column, Row 1: Only HFR significant PPC diff
 ax2 = subplot(3,2,2);
 hold on;
@@ -261,18 +274,27 @@ hold on;
 % MSNs with only HFR significant PPC diff
 if sum(only_hfr_diff_msn) > 0
     scatter(ax2, msn_hfr_delta_fr, msn_hfr_delta_freq, 'SizeData', circle_marker_size, 'MarkerFaceColor', c4, 'MarkerFaceAlpha', marker_alpha, 'MarkerEdgeAlpha', 0);
+    scatter(ax2, msn_hfr_delta_fr, msn_hfr_delta_freq, ...
+        'SizeData', circle_marker_size, 'MarkerEdgeColor', 'black', 'MarkerFaceAlpha', 0, 'MarkerEdgeAlpha', 1);
 end
 
 % FSIs with only HFR significant PPC diff
 if sum(only_hfr_diff_fsi) > 0
     scatter(ax2, fsi_hfr_delta_fr, fsi_hfr_delta_freq, 'SizeData', circle_marker_size, 'MarkerFaceColor', 'blue', 'MarkerFaceAlpha', marker_alpha, 'MarkerEdgeAlpha', 0);
+    scatter(ax2, fsi_hfr_delta_fr, fsi_hfr_delta_freq, ...
+        'SizeData', circle_marker_size, 'MarkerEdgeColor', 'black', 'MarkerFaceAlpha', 0, 'MarkerEdgeAlpha', 1);
 end
 
-ax2.XLabel.String = '\Delta Firing Rate';
-ax2.YLabel.String = '\Delta Peak Frequency (Hz)';
+ax2.XLabel.String = 'Delta Firing Rate';
+ax2.YLabel.String = 'Delta Peak Frequency (Hz)';
 ax2.FontSize = 16;
+ax2.XAxis.FontSize = 24;
+ax2.YAxis.FontSize = 24;
 ax2.Title.String = sprintf('HFR PPC Diff Only (MSN:%d, FSI:%d)', only_hfr_diff_msn_count, only_hfr_diff_fsi_count);
 ax2.YLim = [-100 100];
+ax2.YTick = [-100 -50 0 50 100];
+ax2.Box = 'off';
+ax2.TickDir = 'out';
 
 % Simple legend for this subplot
 if sum(only_hfr_diff_msn) > 0 || sum(only_hfr_diff_fsi) > 0
@@ -299,6 +321,7 @@ if sum(only_hfr_diff_msn) > 0 || sum(only_hfr_diff_fsi) > 0
     
     legend(legend_handles_hfr, legend_entries_hfr, 'Location', 'best', 'FontSize', 12);
 end
+ax2.Legend.FontSize = 21;
 
 % Right Column, Row 2: Only LFR significant PPC diff
 ax3 = subplot(3,2,4);
@@ -307,18 +330,28 @@ hold on;
 % MSNs with only LFR significant PPC diff
 if sum(only_lfr_diff_msn) > 0
     scatter(ax3, msn_lfr_delta_fr, msn_lfr_delta_freq, 'SizeData', circle_marker_size, 'MarkerFaceColor', c4, 'MarkerFaceAlpha', marker_alpha, 'MarkerEdgeAlpha', 0);
+    scatter(ax3, msn_lfr_delta_fr, msn_lfr_delta_freq, ...
+        'SizeData', 0.1*circle_marker_size, 'MarkerFaceColor', 'black', 'MarkerFaceAlpha', 0.5, 'MarkerEdgeAlpha', 0);
+
 end
 
 % FSIs with only LFR significant PPC diff
 if sum(only_lfr_diff_fsi) > 0
     scatter(ax3, fsi_lfr_delta_fr, fsi_lfr_delta_freq, 'SizeData', circle_marker_size, 'MarkerFaceColor', 'blue', 'MarkerFaceAlpha', marker_alpha, 'MarkerEdgeAlpha', 0);
+    scatter(ax3, fsi_lfr_delta_fr, fsi_lfr_delta_freq, ...
+        'SizeData', 0.1*circle_marker_size, 'MarkerFaceColor', 'black', 'MarkerFaceAlpha', 0.5, 'MarkerEdgeAlpha', 0);
 end
 
-ax3.XLabel.String = '\Delta Firing Rate';
-ax3.YLabel.String = '\Delta Peak Frequency (Hz)';
+ax3.XLabel.String = 'Delta Firing Rate';
+ax3.YLabel.String = 'Delta Peak Frequency (Hz)';
 ax3.FontSize = 16;
+ax3.XAxis.FontSize = 24;
+ax3.YAxis.FontSize = 24;
 ax3.Title.String = sprintf('LFR PPC Diff Only (MSN:%d, FSI:%d)', only_lfr_diff_msn_count, only_lfr_diff_fsi_count);
 ax3.YLim = [-100 100];
+ax3.YTick = [-100 -50 0 50 100];
+ax3.Box = 'off';
+ax3.TickDir = 'out';
 
 % Simple legend for this subplot
 if sum(only_lfr_diff_msn) > 0 || sum(only_lfr_diff_fsi) > 0
@@ -345,7 +378,7 @@ if sum(only_lfr_diff_msn) > 0 || sum(only_lfr_diff_fsi) > 0
     
     legend(legend_handles_lfr, legend_entries_lfr, 'Location', 'best', 'FontSize', 12);
 end
-
+ax3.Legend.FontSize = 21;
 % Right Column, Row 3: Both significant PPC diffs
 ax4 = subplot(3,2,6);
 hold on;
@@ -353,18 +386,33 @@ hold on;
 % MSNs with both HFR and LFR significant PPC diff
 if sum(both_diff_msn) > 0
     scatter(ax4, msn_both_delta_fr, msn_both_delta_freq, 'SizeData', circle_marker_size, 'MarkerFaceColor', c4, 'MarkerFaceAlpha', marker_alpha, 'MarkerEdgeAlpha', 0);
+    scatter(ax4, msn_both_delta_fr, msn_both_delta_freq, ...
+        'SizeData', circle_marker_size, 'MarkerEdgeColor', 'black', 'MarkerFaceAlpha', 0, 'MarkerEdgeAlpha', 1);
+    scatter(ax4, msn_both_delta_fr, msn_both_delta_freq, ...
+       'SizeData', 0.1*circle_marker_size, 'MarkerFaceColor', 'black', 'MarkerFaceAlpha', 0.5, 'MarkerEdgeAlpha', 0);
+
 end
 
 % FSIs with both HFR and LFR significant PPC diff
 if sum(both_diff_fsi) > 0
     scatter(ax4, fsi_both_delta_fr, fsi_both_delta_freq, 'SizeData', circle_marker_size, 'MarkerFaceColor', 'blue', 'MarkerFaceAlpha', marker_alpha, 'MarkerEdgeAlpha', 0);
+    scatter(ax4, fsi_both_delta_fr, fsi_both_delta_freq, ...
+        'SizeData', circle_marker_size, 'MarkerEdgeColor', 'black', 'MarkerFaceAlpha', 0, 'MarkerEdgeAlpha', 1);
+    scatter(ax4, fsi_both_delta_fr, fsi_both_delta_freq, ...
+        'SizeData', 0.1*circle_marker_size, 'MarkerFaceColor', 'black', 'MarkerFaceAlpha', 0.5, 'MarkerEdgeAlpha', 0);
+
 end
 
-ax4.XLabel.String = '\Delta Firing Rate';
-ax4.YLabel.String = '\Delta Peak Frequency (Hz)';
+ax4.XLabel.String = 'Delta Firing Rate';
+ax4.YLabel.String = 'Delta Peak Frequency (Hz)';
 ax4.FontSize = 16;
+ax4.XAxis.FontSize = 24;
+ax4.YAxis.FontSize = 24;
 ax4.Title.String = sprintf('Both PPC Diffs (MSN:%d, FSI:%d)', both_diff_msn_count, both_diff_fsi_count);
 ax4.YLim = [-100 100];
+ax4.YTick = [-100 -50 0 50 100];
+ax4.Box = 'off';
+ax4.TickDir = 'out';
 
 % Simple legend for this subplot
 if sum(both_diff_msn) > 0 || sum(both_diff_fsi) > 0
@@ -391,12 +439,13 @@ if sum(both_diff_msn) > 0 || sum(both_diff_fsi) > 0
     
     legend(legend_handles_both, legend_entries_both, 'Location', 'best', 'FontSize', 12);
 end
-
+ax4.Legend.FontSize = 21;
 % Adjust subplot spacing
 % sgtitle('Main Summary: Delta Firing Rate vs Delta Peak Frequency', 'FontSize', 18, 'FontWeight', 'bold');
-
 %% Create second figure with histogram distributions
 fig2 = figure('WindowState', 'maximized');
+fig2.Renderer = 'painters';
+fontname(fig2, 'Helvetica');
 
 hist_bins = -105:10:105;
 % Top Left: All Eligible Cells - Delta Frequency Distribution
@@ -425,7 +474,7 @@ if ~isempty(all_fsi_delta_freq)
     xline(ax5, fsi_mean_delta_freq, 'Color', 'blue', 'LineWidth', 2, 'LineStyle', '--');
 end
 
-ax5.XLabel.String = '\Delta Peak Frequency (Hz)';
+ax5.XLabel.String = 'Delta Peak Frequency (Hz)';
 ax5.YLabel.String = 'Proportion';
 ax5.FontSize = 16;
 ax5.Title.String = 'All Eligible Cells';
@@ -463,7 +512,7 @@ if sum(only_hfr_diff_fsi) > 0
     xline(ax6, mean(fsi_hfr_only_delta_freq), 'Color', 'blue', 'LineWidth', 2, 'LineStyle', '--');
 end
 
-ax6.XLabel.String = '\Delta Peak Frequency (Hz)';
+ax6.XLabel.String = 'Delta Peak Frequency (Hz)';
 ax6.YLabel.String = 'Proportion';
 ax6.FontSize = 16;
 ax6.Title.String = sprintf('HFR PPC Diff Only (MSN:%d, FSI:%d)', only_hfr_diff_msn_count, only_hfr_diff_fsi_count);
@@ -501,7 +550,7 @@ if sum(only_lfr_diff_fsi) > 0
     xline(ax7, mean(fsi_lfr_only_delta_freq), 'Color', 'blue', 'LineWidth', 2, 'LineStyle', '--');
 end
 
-ax7.XLabel.String = '\Delta Peak Frequency (Hz)';
+ax7.XLabel.String = 'Delta Peak Frequency (Hz)';
 ax7.YLabel.String = 'Proportion';
 ax7.FontSize = 16;
 ax7.Title.String = sprintf('LFR PPC Diff Only (MSN:%d, FSI:%d)', only_lfr_diff_msn_count, only_lfr_diff_fsi_count);
@@ -539,7 +588,7 @@ if sum(both_diff_fsi) > 0
     xline(ax8, mean(fsi_both_delta_freq), 'Color', 'blue', 'LineWidth', 2, 'LineStyle', '--');
 end
 
-ax8.XLabel.String = '\Delta Peak Frequency (Hz)';
+ax8.XLabel.String = 'Delta Peak Frequency (Hz)';
 ax8.YLabel.String = 'Proportion';
 ax8.FontSize = 16;
 ax8.Title.String = sprintf('Both PPC Diffs (MSN:%d, FSI:%d)', both_diff_msn_count, both_diff_fsi_count);
