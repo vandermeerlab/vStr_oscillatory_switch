@@ -1,15 +1,12 @@
 %% Example Cell Plot Script
 % cell names to plot
-cell_names = {'R117-2007-06-01-TT07_1', ...
-    'R132-2007-10-27-TT05_3', ... 
-    'R117-2007-06-08-TT03_3', ...
-    'R119-2007-06-29-TT06_5'}; 
+cell_names = {'R131-2007-09-03-TT02_4', ...
+    'R119-2007-07-10-TT11_3'}; 
 % Specify the directory where results are stored
 results_dir = 'D:\vStr_oscillatory_switch_results\temp3\'; % Change this to your results directory
 
 % Output directory
-output_dir = 'E:\Dartmouth College Dropbox\Manish Mohapatra\Figures\Thesis_chapter3\ExampleCells\'; % Change this to your output directory
-
+output_dir = 'E:\Dartmouth College Dropbox\Manish Mohapatra\Figures\Thesis_chapter3\CounterExamples\'; % Change this to your output directory
 
 % Define colors
 c1 = [75/255 0/255 146/255];  % Violet/Purple for LFR
